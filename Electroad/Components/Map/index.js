@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import MapView, { Marker } from "react-native-maps";
-import { StyleSheet, View, Text } from "react-native";
+import MapComponent from "./MapComponent";
+import LocationButton from "./LocationButton";
+import LoadingIndicator from "./LoadingIndicator";
 import * as Location from "expo-location";
-import { FAB, ActivityIndicator, MD2Colors } from "react-native-paper";
+import Route from "./route";
 
 const MapWithCurrentLocation = () => {
   const [point, setPoint] = useState({
@@ -11,10 +12,8 @@ const MapWithCurrentLocation = () => {
     latitudeDelta: 0.0922,
     longitudeDelta: 0.0421,
   });
-
   const [errorMsg, setErrorMsg] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-
   const mapRef = useRef(null);
 
   const userLocation = async () => {
@@ -43,55 +42,13 @@ const MapWithCurrentLocation = () => {
   }, []);
 
   return (
-    <View style={styles.container}>
-      {isLoading && <ActivityIndicator animating={true} color={MD2Colors.red800} style={styles.activityindicator} />}
-      <MapView
-        ref={mapRef}
-        style={styles.map}
-        region={point}
-        onMapReady={() => setIsLoading(false)}
-      >
-        <Marker coordinate={point} title="marker" />
-      </MapView>
-      <FAB
-        icon="crosshairs-gps"
-        style={styles.fab}
-        onPress={() => {
-          userLocation();
-        }}
-      />
-      {errorMsg ? <Text>{errorMsg}</Text> : null}
-    </View>
+    <>
+      <MapComponent region={point} onMapReady={() => setIsLoading(false)} />
+      <LocationButton onPress={userLocation} />
+      <LoadingIndicator isLoading={isLoading} />
+      {errorMsg && <Text>{errorMsg}</Text>}
+    </>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    width: "100%",
-    height: "100%",
-  },
-  map: {
-    flex: 1,
-  },
-  fab: {
-    position: "absolute",
-    margin: 30,
-    right: 0,
-    bottom: 0,
-    zIndex: 100,
-  },
-  activityindicator: {
-    position: 'absolute', 
-    top: 0, 
-    left: 0, 
-    right: 0, 
-    bottom: 0, 
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1000, 
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', 
-  }
-});
 
 export default MapWithCurrentLocation;
