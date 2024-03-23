@@ -203,7 +203,16 @@ def update_issue():
                 if condition == "working" and find_email(station_id, port_id):
                     receiver_email = find_email(station_id, port_id)
                     subject = "subject"
-                    message = "message"
+                    message = '''Dear Customer,
+
+We hope this message finds you well. We wanted to take a moment to update you on some significant improvements we've made to address recent challenges you may have experienced during your EV charging sessions.
+
+After carefully reviewing your feedback and concerns, we're pleased to inform you that we've taken immediate action to resolve port damages , slow charging and all connectivity related issues and enhanced our overall service quality.
+
+We're dedicated to continually improving our service quality to meet and exceed your expectations. Your satisfaction remains our utmost priority, and we're grateful for your ongoing support.
+
+Best regards,
+Team Electroad'''
 
                     msg = MIMEMultipart()
                     msg['From'] = EMAIL_USER

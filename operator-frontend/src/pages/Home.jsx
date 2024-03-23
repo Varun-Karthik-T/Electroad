@@ -14,6 +14,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 ChartJS.register(
     ArcElement,
@@ -27,7 +28,7 @@ const textCenter = (portId) => ({
         const { ctx, data } = chart;
         ctx.save();
         ctx.font = 'bolder 30px sans-serif';
-        ctx.fillStyle = 'black';
+        ctx.fillStyle = 'white';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         const centerX = chart.chartArea.left + chart.chartArea.width / 2;
@@ -42,21 +43,28 @@ const MemoizedDoughnutChart = React.memo(({ port }) => {
 
     // Set backgroundColor to yellow if port condition is "disable", else use default colors
     const backgroundColor = port.condition === "disable" ? 'rgba(255, 206, 86, 0.2)' : [
+        'rgba(75,192,192,0.2)',
         'rgba(255,99,132,0.2)',
+        
         'rgba(54,162,235,0.2)',
         'rgba(255,206,86,0.2)',
-        'rgba(75,192,192,0.2)',
         'rgba(153,102,255,0.2)',
     ];
 
     // Set borderColor to yellow if port condition is "disable", else use default colors
     const borderColor = port.condition === "disable" ? 'rgba(255, 206, 86, 1)' : [
+        'rgba(75,192,192,1)',
         'rgba(255,99,132,1)',
+        
         'rgba(54,162,235,1)',
         'rgba(255,206,86,1)',
-        'rgba(75,192,192,1)',
         'rgba(153,102,255,1)',
     ];
+
+    // Custom function to set label colors
+    const setLabelColor = (context) => {
+        return context.dataIndex === filteredLabels.findIndex(label => label === "no issues") ? 'green' : 'white';
+    };
 
     return (
         <Doughnut
@@ -67,10 +75,33 @@ const MemoizedDoughnutChart = React.memo(({ port }) => {
                     data: filteredData,
                     backgroundColor: backgroundColor,
                     borderColor: borderColor,
-                    borderWidth: 1
+                    borderWidth: 2
                 }]
             }}
-            options={{}}
+            options={{
+                plugins: {
+                    text: {
+                        color: setLabelColor // Change color based on label
+                    },
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        labels: {
+                            color: 'white',
+                            font: {
+                                size: 15
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.formattedValue; // Customize tooltip label if needed
+                            }
+                        }
+                    }
+                }
+            }}
             height={250}
             width={250}
             plugins={[textCenter(port.port_id.toString())]}
@@ -81,6 +112,7 @@ const MemoizedDoughnutChart = React.memo(({ port }) => {
     // Only re-render if portData or its properties change
     return prevProps.port === nextProps.port;
 });
+
 
 const Home = () => {
     const [portData, setPortData] = useState([]);
@@ -162,38 +194,64 @@ const Home = () => {
 
     return (
         <>
-            <div className='bg-[#0f172a] h-[50px] text-[#ffffff] font-poppins flex justify-around items-center flex-wrap'>
+            <div className='bg-[#000] h-[70px] text-[#ffffff] text-[1.5rem] font-poppins flex justify-around items-center flex-wrap'>
                 <div></div>
                 <div>ELECTRODE 
                 <span className="material-symbols-outlined  relative top-[5px] color-[red]">
                     bolt
                 </span>
                 </div>
-                <div></div>
+                <div>
+                <span class="material-symbols-outlined relative left-[150px]">
+                    settings
+                </span>
+                </div>
             </div>
-            <Button>Click me</Button>
-            <div className='flex justify-around items-center gap-10 max-w-full'>
-                {portData && portData.map((port, index) => (
-                    <div key={index}>
-                        <MemoizedDoughnutChart port={port} />
-                        <AlertDialog>
-                            <AlertDialogTrigger className=' w-[160px] h-[160px] rounded-full relative left-[40px] bottom-[180px]'></AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        This action cannot be undone. Select one.
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    {port.condition !== "disable" && <AlertDialogAction onClick={() => handlePortEnable(port.port_id)}>Disable</AlertDialogAction>}
-                                    <AlertDialogAction onClick={() => handlePortAccess(port.port_id)}>Enable</AlertDialogAction>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
+            
+
+            <div className='flex w-[100vw] h-[100%]' >
+
+            
+                <div className=' flex-col justify-center content-center bg-[#000] w-[300px] h-[600px]'>
+                    <div className='pl-[100px] drop-shadow-[0_37px_37px_rgba(40, 67, 135,0.25)]'>
+                        <Avatar style={{ height: "80px", width: "80px" }}>
+                            <AvatarImage src="https://github.com/shadcn.png" />
+                            <AvatarFallback >CN</AvatarFallback>
+                        </Avatar>
                     </div>
-                ))}
+                    
+                        <p className='text-[#ffffff] font-poppins text-center text-[18px]'>Welcome back</p>
+                        <p className='text-[#9ad9f8] font-poppins text-center text-[30px]'>Mr.Cooper</p>
+                        <p className='text-[#ffffff] font-poppins text-center filter drop-shadow(0 37px 37px rgba(40, 67, 135, 0.25)) p-[10px]' >
+                        Look's Like we have some <span className='text-sky-400'>Work</span> to do...
+                        </p>
+                </div>
+                
+                <div className='bg-gradient-to-tr from-blue-900 via-black via-50% to-blue-800 w-[1200px] h-[auto] p-[100px]'>
+                    <div className='flex justify-around items-center flex-wrap '>
+                        {portData && portData.map((port, index) => (
+                            <div key={index}>
+                                <MemoizedDoughnutChart port={port} />
+                                <AlertDialog>
+                                    <AlertDialogTrigger className=' w-[160px] h-[160px] rounded-full relative left-[40px] bottom-[280px] '></AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This action cannot be undone. Select one.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            {port.condition !== "disable" && <AlertDialogAction onClick={() => handlePortEnable(port.port_id)}>Disable</AlertDialogAction>}
+                                            <AlertDialogAction onClick={() => handlePortAccess(port.port_id)}>Enable</AlertDialogAction>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
         </>
     );

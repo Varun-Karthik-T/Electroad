@@ -4,7 +4,7 @@ import LocationButton from "./LocationButton";
 import LoadingIndicator from "./LoadingIndicator";
 import * as Location from "expo-location";
 
-import data from "./data";
+import {mapData as data} from "@/constants";
 
 const MapWithCurrentLocation = () => {
   const [point, setPoint] = useState({
