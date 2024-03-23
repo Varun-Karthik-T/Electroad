@@ -156,8 +156,8 @@ def update_ratings():
             except Exception as e:
                 return jsonify({'error': str(e)}), 500
             
-@app.post('/documents_id')
-def documents_id():
+@app.post('/ports_id')
+def ports_id():
     try:
         data = request.get_json()
         station_id = data.get('station_id')
