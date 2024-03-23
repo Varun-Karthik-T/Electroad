@@ -148,7 +148,7 @@ def update_issue():
 
                 if condition == "working":
                     collection = db['ports']
-                    collection.update_many({'port_id': port_id , 'station_id': station_id}, {'$set': {'issue.port_damage': 0, 'issue.slow_charging': 0}})
+                    collection.update_many({'port_id': port_id , 'station_id': station_id}, {'$set': {'issue.port damage': 0, 'issue.slow charging': 0, 'condition': 'working', 'issue.not connecting': 0, 'issue.connecting but not charging': 0}})
                     return jsonify({'message': 'Issue updated successfully'}), 200
                 else:
                     return jsonify({'error': 'Invalid condition'}), 400
