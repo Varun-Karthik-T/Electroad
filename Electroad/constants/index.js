@@ -21,4 +21,13 @@ const issueList = [
     },
 ]
 
-export { issueList }
+const reviews = [
+    "The station is good",
+    "The station is bad",
+    "The station is average",
+    "The station is worst",
+    "The station is best",
+    "quite good",
+]
+
+export { issueList, reviews }
