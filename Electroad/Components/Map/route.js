@@ -19,17 +19,17 @@ const Route = () => {
     <View style={styles.container}>
       <MapView style={styles.map}
       initialRegion={{
-        latitude: (origin.latitude + destination.latitude) / 2,
-        longitude: (origin.longitude + destination.longitude) / 2,
-        latitudeDelta: Math.abs(origin.latitude - destination.latitude) + 0.1,
-        longitudeDelta: Math.abs(origin.longitude - destination.longitude) + 0.1,
+        latitude: ((origin.latitude + destination.latitude) / 2),
+        longitude:((origin.longitude + destination.longitude) / 2),
+        latitudeDelta: Math.abs(origin.latitude - destination.latitude) + 1.0,
+        longitudeDelta: Math.abs(origin.longitude - destination.longitude) + .0,
       }
     }
       >
         <MapViewDirections
           origin={origin}
           destination={destination}
-          apikey= {process.env.EXPO_PUBLIC_GOOGLE_API_KEY}
+         // apikey= {process.env.EXPO_PUBLIC_GOOGLE_API_KEY}
           strokeWidth={2}
           strokeColor="red"
           mode={'DRIVING'}
