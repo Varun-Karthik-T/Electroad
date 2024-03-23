@@ -53,6 +53,26 @@ def fetch_data(station_id, port_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+def find_email(station_id, port_id):
+    try:
+        collection = db['issues']
+        document = collection.find_one({'station_id': station_id, 'port_id': port_id})
+        if document:
+            return document.get('email')
+        else:
+            return None
+    except Exception as e:
+         print(e)
+    return None
+
+def delete_issue(station_id, port_id):
+    try:
+        collection = db['issues']
+        collection.delete_one({'station_id': station_id, 'port_id': port_id})
+    except Exception as e:
+        print(e)
+    return None
+
 @app.route('/')
 def hello():
     return 'Hello, World!'
@@ -171,9 +191,10 @@ def update_issue():
                 station_id = data.get('station_id')
                 condition = data.get('condition')
                 port_id = data.get('port_id')
-                receiver_email = data.get('receiver_email')
-                subject = data.get('subject')
-                message = data.get('message')
+
+                receiver_email = find_email(station_id, port_id)
+                subject = "subject"
+                message = "message"
 
                 msg = MIMEMultipart()
                 msg['From'] = EMAIL_USER
@@ -190,7 +211,10 @@ def update_issue():
                 if condition == "working":
                     collection = db['ports']
                     collection.update_many({'port_id': port_id , 'station_id': station_id}, {'$set': {'issue.port damage': 0, 'issue.slow charging': 0, 'condition': 'working', 'issue.not connecting': 0, 'issue.connecting but not charging': 0}})
-                
+                    delete_issue(station_id, port_id)
+                elif condition == "disable":
+                     collection = db['ports']
+                     collection.update_many({'port_id': port_id , 'station_id': station_id}, {'$set': {'condition': 'disable'}})
                 documents_station = collection.find({'station_id': station_id,'port_id': port_id})
                 station_documents = []
                 for doc in documents_station:
