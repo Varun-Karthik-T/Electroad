@@ -133,29 +133,33 @@ def get_station():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-
 @app.post('/update_ratings')
 def update_ratings():
-            try:
-                data = request.get_json()
-                station_id = data.get('station_id')
-                ratings = data.get('ratings')
-                feedback_content = data.get('feedback_content')
-                collection = db['station']
-                document = collection.find_one({'station_id': station_id})
+    try:
+        data = request.get_json()
+        station_id = data.get('station_id')
+        ratings = data.get('ratings')
+        feedback_content = data.get('feedback_content')
+        collection = db['station']
+        document = collection.find_one({'station_id': station_id})
 
-                if document:
-                    no_of_ratings = document.get('no_of_ratings', 0)
-                    overall_ratings = document.get('overall_ratings', 0)
-                    document['no_of_ratings'] = round((overall_ratings + ratings) / (no_of_ratings + 1))
-                    collection.update_one({'_id': document['_id']}, {'$set': { 'no_of_ratings': document['no_of_ratings']}})
+        if document:
+            no_of_ratings = document.get('no_of_ratings', 0)
+            overall_ratings = document.get('overall_ratings', 0)
 
-                    return jsonify({'message': 'No. of ratings updated successfully'}), 200
-                else:
-                    return jsonify({'error': 'Station not found'}), 404
-            except Exception as e:
-                return jsonify({'error': str(e)}), 500
-            
+            calc_overall_ratings = ((overall_ratings * no_of_ratings) + ratings) / (no_of_ratings + 1)
+            calc_overall_ratings = float(f'{calc_overall_ratings:.1f}')
+            print(((overall_ratings * no_of_ratings) + ratings) / (no_of_ratings + 1))
+
+            no_of_ratings += 1
+            collection.update_one({'station_id': station_id}, {'$set': {'overall_ratings': calc_overall_ratings, 'feedback_content': feedback_content, 'no_of_ratings': no_of_ratings}})
+
+            return jsonify({'message': 'Ratings updated successfully'}), 200
+        else:
+            return jsonify({'error': 'Station not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.post('/ports_id')
 def ports_id():
     try:
@@ -281,5 +285,24 @@ def send_email():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
+
+@app.post('/get_station_details')
+def get_station_details():
+    try:
+        data = request.get_json()
+        station_id = data.get('station_id')
+
+        collection = db['station']
+        cursor = collection.find({'station_id': station_id})
+
+        documents = []
+        for document in cursor:
+            document.pop('_id', None)
+            documents.append(document)
+
+        return jsonify(documents), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+        
 if __name__ == '__main__':
     app.run(debug=True)
