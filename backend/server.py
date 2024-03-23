@@ -124,10 +124,8 @@ def documents_id():
         
         port_documents = []
         for doc in documents_ports:
-            # Exclude the _id key from the document
             doc.pop('_id', None)
             
-            # Format other fields if needed
             for key, value in doc.items():
                 if isinstance(value, ObjectId):
                     doc[key] = str(value)
@@ -139,6 +137,24 @@ def documents_id():
         return jsonify({'station_documents': station_documents, 'port_documents': port_documents}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.post('/update_issue')
+def update_issue():
+            try:
+                data = request.get_json()
+                station_id = data.get('station_id')
+                condition = data.get('condition')
+                port_id = data.get('port_id')
+
+                if condition == "working":
+                    collection = db['ports']
+                    collection.update_many({'port_id': port_id , 'station_id': station_id}, {'$set': {'issue.port_damage': 0, 'issue.slow_charging': 0}})
+                    return jsonify({'message': 'Issue updated successfully'}), 200
+                else:
+                    return jsonify({'error': 'Invalid condition'}), 400
+            except Exception as e:
+                return jsonify({'error': str(e)}), 500
+            
 
 if __name__ == '__main__':
     app.run(debug=True)
