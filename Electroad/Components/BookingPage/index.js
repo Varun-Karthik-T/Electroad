@@ -1,7 +1,8 @@
 import { View } from "react-native";
-import { useTheme, Button } from "react-native-paper";
+import { useTheme } from "react-native-paper";
 import { Text } from 'react-native-paper';
 import IssueButton from "../IssueButton";
+import { Link } from "expo-router";
 
 export default function BookingPage() {
   const theme = useTheme();
@@ -23,7 +24,7 @@ export default function BookingPage() {
   return (
     <View style={styles.container}>
       <Text style={styles.text}>ajajjy</Text>
-      <IssueButton stationName={"Thiruvanmiyur"} portId={11} portType={"CCS"}/>
+      <Link href="/station"> Test station page </Link>
     </View>
   );
 }
