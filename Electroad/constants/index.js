@@ -30,6 +30,6 @@ const reviews = [
     "quite good",
 ]
 
-const apiURL = "http://192.168.137.1:5000/"
+const apiURL = process.env.EXPO_PUBLIC_API_URL
 
 export { issueList, reviews, apiURL }
