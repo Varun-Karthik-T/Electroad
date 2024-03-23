@@ -80,8 +80,8 @@ export default function StationPage({ stationName, location }) {
               </Button>
               <View style={{ marginHorizontal: 10 }}>
                 <IssueButton
-                  stationName={"Thiruvanmaiyur"}
-                  portId={11}
+                  station_id={"220"}
+                  port_id={289}
                   portType={"CCS"}
                 />
               </View>

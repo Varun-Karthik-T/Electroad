@@ -7,11 +7,12 @@ import {
   Chip,
   TextInput,
   Menu,
+  ActivityIndicator,
 } from "react-native-paper";
 import { useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { issueList } from "@/constants/index.js";
-import axios from "axios"
+import axios from "axios";
 import { apiURL } from "@/constants";
 
 const styles = StyleSheet.create({
@@ -20,44 +21,49 @@ const styles = StyleSheet.create({
   },
 });
 
-export default function IssueButton({ station_id,  port_id }) {
+export default function IssueButton({ station_id, port_id, portType }) {
   const theme = useTheme();
 
   const [visible, setVisible] = useState(false);
   const [Brief, setBrief] = useState("");
   const [issueType, setIssueType] = useState("");
   const [showDropDown, setShowDropDown] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  function submitReview() {
-    axios.post(apiURL + "issue", {
-      station_id: station_id,
-      port_id: port_id,
-      issueType,
-      Brief,
-    })
-    .then((response) => {
-      console.log(response.data);
+  async function submitReview() {
+    try {
+      setLoading(true);
+      const response = await axios.post(apiURL + "add_issue", {
+        station_id: station_id,
+        port_id: port_id,
+        issue_type: issueType,
+        email: "salailovespaneer@gmail.com",
+      });
       setVisible(false);
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-
+      setLoading(false);
+      console.log(response.data);
+    } catch (err) {
+      setLoading(false);
+      console.log("Review submission la prachana: " + err);
+    }
   }
 
   return (
     <>
       <Portal>
-        <Dialog visible={visible} onDismiss={hideDialog}>
+        <Dialog
+          dismissable={!loading}
+          visible={visible}
+          onDismiss={() => setVisible(false)}
+        >
           <Dialog.Title>Raise an issue</Dialog.Title>
           <Dialog.Content>
             <View style={{ flexDirection: "column", gap: 10 }}>
               <View style={{ flexDirection: "row", gap: 10 }}>
-                <Chip> {stationName}</Chip>
-                <Chip> {portId}</Chip>
+                <Chip> {station_id}</Chip>
+                <Chip> {port_id}</Chip>
                 <Chip> {portType}</Chip>
               </View>
-              <Text>This is simple diaddlog</Text>
               <Menu
                 visible={showDropDown}
                 style={styles.menuStyle}
@@ -88,6 +94,10 @@ export default function IssueButton({ station_id,  port_id }) {
             </View>
           </Dialog.Content>
           <Dialog.Actions>
+            <ActivityIndicator
+              animating={loading}
+              color={theme.colors.primary}
+            />
             <Button onPress={submitReview}>Submit</Button>
           </Dialog.Actions>
         </Dialog>

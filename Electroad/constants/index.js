@@ -30,6 +30,6 @@ const reviews = [
     "quite good",
 ]
 
-const apiURL = "http://127.0.0.1:5000/"
+const apiURL = "http://192.168.137.1:5000/"
 
 export { issueList, reviews, apiURL }
