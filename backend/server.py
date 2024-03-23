@@ -140,7 +140,7 @@ def update_ratings():
                 data = request.get_json()
                 station_id = data.get('station_id')
                 ratings = data.get('ratings')
-
+                feedback_content = data.get('feedback_content')
                 collection = db['station']
                 document = collection.find_one({'station_id': station_id})
 
@@ -148,7 +148,7 @@ def update_ratings():
                     no_of_ratings = document.get('no_of_ratings', 0)
                     overall_ratings = document.get('overall_ratings', 0)
                     document['no_of_ratings'] = round((overall_ratings + ratings) / (no_of_ratings + 1))
-                    collection.update_one({'_id': document['_id']}, {'$set': {'no_of_ratings': document['no_of_ratings']}})
+                    collection.update_one({'_id': document['_id']}, {'$set': { 'no_of_ratings': document['no_of_ratings']}})
 
                     return jsonify({'message': 'No. of ratings updated successfully'}), 200
                 else:
@@ -196,7 +196,7 @@ def update_issue():
                 condition = data.get('condition')
                 port_id = data.get('port_id')
 
-                if condition == "working":
+                if condition == "working" and find_email(station_id, port_id):
                     receiver_email = find_email(station_id, port_id)
                     subject = "subject"
                     message = "message"
@@ -215,6 +215,10 @@ def update_issue():
                     collection = db['ports']
                     collection.update_many({'port_id': port_id , 'station_id': station_id}, {'$set': {'issue.port damage': 0, 'issue.slow charging': 0, 'condition': 'working', 'issue.not connecting': 0, 'issue.connecting but not charging': 0}})
                     delete_issue(station_id, port_id)
+                elif condition == "working":
+                    collection = db['ports']
+                    collection.update_many({'port_id': port_id , 'station_id': station_id}, {'$set': {'issue.port damage': 0, 'issue.slow charging': 0, 'condition': 'working', 'issue.not connecting': 0, 'issue.connecting but not charging': 0}})
+
                 elif condition == "disable":
                      collection = db['ports']
                      collection.update_many({'port_id': port_id , 'station_id': station_id}, {'$set': {'condition': 'disable'}})
