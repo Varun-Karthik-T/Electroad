@@ -1,13 +1,16 @@
 import React, { useState } from "react";
 import { Text, View, Modal, ScrollView } from "react-native";
-import { Button, Card, TextInput, List, Menu, RadioButton } from "react-native-paper";
+import { Button, Card, TextInput, List, Menu, RadioButton, IconButton, Avatar } from "react-native-paper";
 import { useTheme } from "react-native-paper";
 
 export default function ProfilePage() {
   const theme = useTheme();
   const [editModalVisible, setEditModalVisible] = useState(false);
-  const [selectedEV, setSelectedEV] = useState("");
-  const [carName, setCarName] = useState("");
+  const [selectedEV, setSelectedEV] = useState(null);
+  const [carList, setCarList] = useState([{ id: 1, name: "", batteryType: "" }]);
+  const [evMenuVisible, setEvMenuVisible] = useState(false);
+  const [selectedCarIndex, setSelectedCarIndex] = useState(0);
+  const [carInfoTitle, setCarInfoTitle] = useState("Car Information");
   const [batteryType, setBatteryType] = useState("");
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
   const [cardDetails, setCardDetails] = useState({}); // Object to store card details
@@ -52,6 +55,7 @@ export default function ProfilePage() {
     card: {
       marginBottom: 20,
       padding: 10,
+      paddingBottom: 20,
     },
     modalContainer: {
       flex: 1,
@@ -72,7 +76,13 @@ export default function ProfilePage() {
     },
     menuContainer: {
       flexDirection: "row",
-      justifyContent: "flex-end",
+      justifyContent: "center",
+      alignItems: "center",
+      alignSelf: "center",
+    },
+    avatar: {
+      marginBottom: 0,
+      alignSelf: 'flex-end',
     },
   };
 
@@ -85,13 +95,31 @@ export default function ProfilePage() {
     // Perform actions to save changes here
   };
 
-  const handleEVChange = (value) => {
-    setSelectedEV(value);
-    setIsMenuVisible(false); // Close the dropdown menu when an option is selected
-    const selectedOption = EVOptions.find((ev) => ev.name === value);
-    if (selectedOption) {
-      setCarName(selectedOption.name);
-      setBatteryType(selectedOption.batteryType);
+  const handleEVChange = (carIndex, evName) => {
+    const updatedCarList = carList.map((car) => {
+      if (car.id === carIndex) {
+        const selectedOption = EVOptions.find((ev) => ev.name === evName);
+        return { ...car, name: selectedOption.name, batteryType: selectedOption.batteryType };
+      }
+      return car;
+    });
+    setCarList(updatedCarList);
+    setEvMenuVisible(false);
+    setSelectedEV(true);
+  };
+
+  const handleAddCar = () => {
+    if (carList.length < 5) {
+      const newCarId = carList.length + 1;
+      setCarList([...carList, { id: newCarId, name: "", batteryType: "" }]);
+    }
+    setSelectedEV(false);
+  };
+
+  const handleRemoveCar = (carId) => {
+    if (carList.length > 1) {
+      const updatedCarList = carList.filter((car) => car.id !== carId);
+      setCarList(updatedCarList);
     }
   };
 
@@ -148,53 +176,87 @@ export default function ProfilePage() {
       </View>
     );
   };
-  
+
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Card style={styles.card}>
           <Card.Title title="User Profile Information" />
           <Card.Content>
-            <Text style={styles.text}>Name: {userInformation.name}</Text>
-            <Text style={styles.text}>Email: {userInformation.email}</Text>
+            <View style={{ flexDirection: "row", gap:40 }}>
+              <View>
+                <Text style={styles.text}>Name: {userInformation.name}</Text>
+                <Text style={styles.text}>Email: {userInformation.email}</Text>
+                </View>
+              <View style={styles.avatar}>
+                <Avatar.Image source={userInformation.avatar} size={70} />
+              </View>
+            </View>
             <Button
               mode="outlined"
               onPress={handleEditModal}
-              style={{ marginTop: 10 }}
+              style={{ marginTop: 20, paddingBottom: 0 }}
             >
               Edit
             </Button>
           </Card.Content>
         </Card>
 
-        <Card style={styles.card}>
-          <Card.Title title="Car Information" />
-          <Card.Content>
-            <View style={styles.menuContainer}>
-              <Menu
-                visible={isMenuVisible}
-                onDismiss={() => setIsMenuVisible(false)}
-                anchor={
-                  <Button mode="outlined" onPress={() => setIsMenuVisible(true)}>
-                    {selectedEV || "Select EV"}
-                  </Button>
-                }
-              >
-                {EVOptions.map((ev, index) => (
-                  <Menu.Item
-                    key={index}
-                    onPress={() => handleEVChange(ev.name)}
-                    title={ev.name}
-                  />
-                ))}
-              </Menu>
+        {carList.map((car, index) => (
+          <Card key={car.id} style={styles.card}>
+            <Text style={styles.cardTitle}>{index === 0 ? carInfoTitle : `Car ${index + 1}`}</Text>
+            <Card.Content>
+              <View style={styles.menuContainer, {paddingBottom: 30, top: 10}}>
+                <Menu
+                  visible={evMenuVisible && selectedCarIndex === car.id}
+                  onDismiss={() => setEvMenuVisible(false)}
+                  anchor={
+                    <Button mode="outlined" onPress={() => {
+                      setSelectedCarIndex(car.id);
+                      setEvMenuVisible(true);
+                    }}>
+                      {car.name || "Select EV"}
+                    </Button>
+                  } style = {{width: "75%"}}
+                >
+                  {EVOptions.map((ev, evIndex) => (
+                    <Menu.Item
+                      key={evIndex}
+                      onPress={() => handleEVChange(car.id, ev.name)}
+                      title={ev.name}
+                    />
+                  ))}
+                </Menu>
+              </View>
+              {/* {selectedEV && (
+              <View style={{ alignItems: 'center', marginBottom: 10 }}>
+                <Avatar.Image source={selectedEV.avatar} size={50} />
+              </View>
+            )}  */}
+              <Text>Selected EV: {car.name}</Text>
+              <Text>Battery Type: {car.batteryType}</Text>
+            </Card.Content>
+            <View style={styles.addRemoveButton,{paddingBottom: 40}}>
+              {carList.length > 1 && (
+                <IconButton
+                  icon="minus"
+                  onPress={() => handleRemoveCar(car.id)}
+                  style={{ position: 'absolute', bottom: 10, top: 2, left: 10 }}
+                />
+              )}
+              <IconButton
+                icon="plus"
+                onPress={handleAddCar}
+                disabled={carList.length === 5}
+                style={{ position: 'absolute', bottom: 10, top: 2, right: 10 }}
+              />
             </View>
-            <Text style={styles.text}>Selected EV: {carName}</Text>
-            <Text style={styles.text}>Battery Type: {batteryType}</Text>
-          </Card.Content>
-        </Card>
 
-      
+
+          </Card>
+        ))}
+
+
         {renderCollapsibleSection("Payment Methods", (
           <View>
             <RadioButton.Group
@@ -231,13 +293,13 @@ export default function ProfilePage() {
         {/* Add other sections and components */}
 
         <Button
-        mode="contained"
-        style={styles.logoutButton}
-        onPress={() => alert("Logout")}
-      >
-        Logout
-      </Button>
-      
+          mode="contained"
+          style={styles.logoutButton}
+          onPress={() => alert("Logout")}
+        >
+          Logout
+        </Button>
+
       </ScrollView>
       {renderEditModal()}
     </View>
