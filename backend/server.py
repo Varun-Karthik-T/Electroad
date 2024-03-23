@@ -155,6 +155,24 @@ def update_issue():
             except Exception as e:
                 return jsonify({'error': str(e)}), 500
             
+@app.post('/add_issue')
+def add_issue():
+                try:
+                    data = request.get_json()
+                    station_id = data.get('station_id')
+                    port_id = data.get('port_id')
+                    issue_type = data.get('issue_type')
 
+                    collection = db['issues']
+                    document = {
+                        'station_id': station_id,
+                        'port_id': port_id,
+                        'issue_type': issue_type
+                    }
+                    collection.insert_one(document)
+
+                    return jsonify({'message': 'Issue added successfully'}), 200
+                except Exception as e:
+                    return jsonify({'error': str(e)}), 500
 if __name__ == '__main__':
     app.run(debug=True)
