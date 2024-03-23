@@ -233,13 +233,14 @@ def add_issue():
                     station_id = data.get('station_id')
                     port_id = data.get('port_id')
                     issue_type = data.get('issue_type')
-                    
+                    email = data.get('email')
 
                     collection = db['issues']
                     document = {
                         'station_id': station_id,
                         'port_id': port_id,
-                        'issue_type': issue_type
+                        'issue_type': issue_type,
+                        'email': email,
                     }
                     collection.insert_one(document)
 
