@@ -149,10 +149,10 @@ def update_ratings():
 
             calc_overall_ratings = ((overall_ratings * no_of_ratings) + ratings) / (no_of_ratings + 1)
             calc_overall_ratings = float(f'{calc_overall_ratings:.1f}')
-            print(((overall_ratings * no_of_ratings) + ratings) / (no_of_ratings + 1))
-
+            fb = document.get('feedback_content', [])
+            fb.append(feedback_content)
             no_of_ratings += 1
-            collection.update_one({'station_id': station_id}, {'$set': {'overall_ratings': calc_overall_ratings, 'feedback_content': feedback_content, 'no_of_ratings': no_of_ratings}})
+            collection.update_one({'station_id': station_id}, {'$set': {'overall_ratings': calc_overall_ratings, 'feedback_content': fb, 'no_of_ratings': no_of_ratings}})
 
             return jsonify({'message': 'Ratings updated successfully'}), 200
         else:
