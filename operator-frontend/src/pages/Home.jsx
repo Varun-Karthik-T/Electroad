@@ -148,7 +148,8 @@ const Home = () => {
                                         </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
-                                        <AlertDialogAction onClick={() => handlePortEnable(port.port_id)}>Disable</AlertDialogAction>
+                                        {/* <AlertDialogAction onClick={() => handlePortEnable(port.port_id)}>Disable</AlertDialogAction> */}
+                                        {port.condition !== "disable" && <AlertDialogAction onClick={() => handlePortEnable(port.port_id)}>Disable</AlertDialogAction>}
                                         <AlertDialogAction onClick={() => handlePortAccess(port.port_id)}>Enable</AlertDialogAction>
                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                                     </AlertDialogFooter>

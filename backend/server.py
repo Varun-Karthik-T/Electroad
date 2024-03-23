@@ -34,24 +34,28 @@ def dbconnection():
         print(e)
 
 dbconnection()
-def fetch_data(station_id, port_id):
+def fetch_data(station_id):
     try:
         collection = db['ports']
-        document = collection.find_one({'station_id': station_id, 'port_id': port_id})
+        cursor = collection.find({'station_id': station_id})
 
-        if document:
+        documents = []
+        for document in cursor:
             document.pop('_id', None)
             for key, value in document.items():
                 if isinstance(value, ObjectId):
                     document[key] = str(value)
                 elif isinstance(value, Timestamp):
                     document[key] = datetime.datetime.fromtimestamp(value.time).strftime('%Y-%m-%d %H:%M:%S')
+            documents.append(document)
 
-            return jsonify(document), 200
+        if documents:
+            return jsonify(documents), 200
         else:
             return jsonify({'error': 'Data not found'}), 404
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 def find_email(station_id, port_id):
     try:
@@ -192,23 +196,22 @@ def update_issue():
                 condition = data.get('condition')
                 port_id = data.get('port_id')
 
-                receiver_email = find_email(station_id, port_id)
-                subject = "subject"
-                message = "message"
-
-                msg = MIMEMultipart()
-                msg['From'] = EMAIL_USER
-                msg['To'] = receiver_email
-                msg['Subject'] = subject
-
-                msg.attach(MIMEText(message, 'plain'))
-                server = smtplib.SMTP(EMAIL_HOST, EMAIL_PORT)
-                server.starttls()
-                server.login(EMAIL_USER, EMAIL_PASSWORD)
-                server.sendmail(EMAIL_USER, receiver_email, msg.as_string())
-                server.quit()
-
                 if condition == "working":
+                    receiver_email = find_email(station_id, port_id)
+                    subject = "subject"
+                    message = "message"
+
+                    msg = MIMEMultipart()
+                    msg['From'] = EMAIL_USER
+                    msg['To'] = receiver_email
+                    msg['Subject'] = subject
+
+                    msg.attach(MIMEText(message, 'plain'))
+                    server = smtplib.SMTP(EMAIL_HOST, EMAIL_PORT)
+                    server.starttls()
+                    server.login(EMAIL_USER, EMAIL_PASSWORD)
+                    server.sendmail(EMAIL_USER, receiver_email, msg.as_string())
+                    server.quit()
                     collection = db['ports']
                     collection.update_many({'port_id': port_id , 'station_id': station_id}, {'$set': {'issue.port damage': 0, 'issue.slow charging': 0, 'condition': 'working', 'issue.not connecting': 0, 'issue.connecting but not charging': 0}})
                     delete_issue(station_id, port_id)
@@ -220,7 +223,7 @@ def update_issue():
                 for doc in documents_station:
                     no_of_ports = doc.get('no_of_ports')  
                     station_documents.append(no_of_ports)  
-                return fetch_data(station_id, port_id)
+                return fetch_data(station_id)
                 
             except Exception as e:
                 return jsonify({'error': str(e)}), 500
@@ -233,13 +236,14 @@ def add_issue():
                     station_id = data.get('station_id')
                     port_id = data.get('port_id')
                     issue_type = data.get('issue_type')
-                    
+                    email = data.get('email')
 
                     collection = db['issues']
                     document = {
                         'station_id': station_id,
                         'port_id': port_id,
-                        'issue_type': issue_type
+                        'issue_type': issue_type,
+                        'email': email,
                     }
                     collection.insert_one(document)
 
