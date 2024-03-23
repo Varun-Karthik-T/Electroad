@@ -192,23 +192,22 @@ def update_issue():
                 condition = data.get('condition')
                 port_id = data.get('port_id')
 
-                receiver_email = find_email(station_id, port_id)
-                subject = "subject"
-                message = "message"
-
-                msg = MIMEMultipart()
-                msg['From'] = EMAIL_USER
-                msg['To'] = receiver_email
-                msg['Subject'] = subject
-
-                msg.attach(MIMEText(message, 'plain'))
-                server = smtplib.SMTP(EMAIL_HOST, EMAIL_PORT)
-                server.starttls()
-                server.login(EMAIL_USER, EMAIL_PASSWORD)
-                server.sendmail(EMAIL_USER, receiver_email, msg.as_string())
-                server.quit()
-
                 if condition == "working":
+                    receiver_email = find_email(station_id, port_id)
+                    subject = "subject"
+                    message = "message"
+
+                    msg = MIMEMultipart()
+                    msg['From'] = EMAIL_USER
+                    msg['To'] = receiver_email
+                    msg['Subject'] = subject
+
+                    msg.attach(MIMEText(message, 'plain'))
+                    server = smtplib.SMTP(EMAIL_HOST, EMAIL_PORT)
+                    server.starttls()
+                    server.login(EMAIL_USER, EMAIL_PASSWORD)
+                    server.sendmail(EMAIL_USER, receiver_email, msg.as_string())
+                    server.quit()
                     collection = db['ports']
                     collection.update_many({'port_id': port_id , 'station_id': station_id}, {'$set': {'issue.port damage': 0, 'issue.slow charging': 0, 'condition': 'working', 'issue.not connecting': 0, 'issue.connecting but not charging': 0}})
                     delete_issue(station_id, port_id)
