@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import {Button} from "@/components/ui/button"
-
+import  Home from "./pages/Home"
 import { Route,Routes,BrowserRouter as Router } from 'react-router-dom'
 
 function App() {
@@ -10,10 +10,11 @@ function App() {
     <>
       <Router>
         <Routes>
-          <Route path="/" element={} />
+    
+            <Route path="/" element={<Home/>}/>
+         
         </Routes>
       </Router>
-      
     </>
   )
 }
