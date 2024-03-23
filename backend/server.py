@@ -79,7 +79,7 @@ def delete_issue(station_id, port_id):
 
 @app.route('/')
 def hello():
-    return 'Hello, World!'
+    return 'Binary Potatoes !!'
 
 @app.post('/new')
 def get_keys():

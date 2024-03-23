@@ -30,4 +30,6 @@ const reviews = [
     "quite good",
 ]
 
-export { issueList, reviews }
+const apiURL = process.env.EXPO_PUBLIC_API_URL
+
+export { issueList, reviews, apiURL }

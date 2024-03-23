@@ -1,5 +1,6 @@
 // MapComponent.js
 import React from "react";
+import { router } from 'expo-router';
 import { StyleSheet } from "react-native";
 
 import MapView, { Marker } from "react-native-maps";
@@ -15,7 +16,7 @@ const MapComponent = ({ region, onMapReady, data }) => {
           key={location.id}
           coordinate={{ latitude: location.latitude, longitude: location.longitude }}
           // ev staion id here
-          title={location.title}  onPress={() => {alert('You clicked on ' + location.title)}}
+          title={location.title}  onPress={() => {router.navigate(`/station/${location.id}`)}}
           pinColor="blue"
           
         />
