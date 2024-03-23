@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
+import { useLocalSearchParams } from 'expo-router';
 import MapViewDirections from 'react-native-maps-directions';
 
 const Route = ({ olatitude, olongitude, dlatitude, dlongitude }) => {
@@ -8,6 +9,8 @@ const Route = ({ olatitude, olongitude, dlatitude, dlongitude }) => {
     latitude: dlatitude,
     longitude: dlongitude,
   });
+
+  const station_id = useLocalSearchParams();
 
   const [origin, setOrigin] = useState({
     latitude: olatitude,

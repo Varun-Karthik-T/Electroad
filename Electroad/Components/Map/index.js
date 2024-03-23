@@ -3,7 +3,8 @@ import MapComponent from "./MapComponent";
 import LocationButton from "./LocationButton";
 import LoadingIndicator from "./LoadingIndicator";
 import * as Location from "expo-location";
-import Route from "./route";
+
+import data from "./data";
 
 const MapWithCurrentLocation = () => {
   const [point, setPoint] = useState({
@@ -12,38 +13,40 @@ const MapWithCurrentLocation = () => {
     latitudeDelta: 0.0922,
     longitudeDelta: 0.0421,
   });
+
   const [errorMsg, setErrorMsg] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const mapRef = useRef(null);
 
   const userLocation = async () => {
-    setIsLoading(true);
     let { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== "granted") {
-      setErrorMsg("Permission to access location was denied");
+    if (status !== 'granted') {
+      setErrorMsg('Permission to access location was denied');
       return;
     }
-    let location = await Location.getCurrentPositionAsync({
-      accuracy: Location.Accuracy.High,
-    });
-    const newPoint = {
+    let location = await Location.getCurrentPositionAsync({accuracy:Location.Accuracy.High});
+    setPoint({
       latitude: location.coords.latitude,
       longitude: location.coords.longitude,
-      latitudeDelta: 0.0922,
-      longitudeDelta: 0.0421,
-    };
-    setPoint(newPoint);
-    mapRef.current.animateToRegion(newPoint, 500);
-    setIsLoading(false);
+      latitudeDelta: 0.8,
+      longitudeDelta: 0.8,
+    });
   };
 
   useEffect(() => {
-    userLocation();
+    const interval = setInterval(() => {
+      userLocation();
+    }, 5000); 
+
+    return () => clearInterval(interval);
   }, []);
 
   return (
     <>
-      <MapComponent region={point} onMapReady={() => setIsLoading(false)} />
+      <MapComponent
+        region={point}
+        onMapReady={() => setIsLoading(false)}
+        data={data}
+      />
       <LocationButton onPress={userLocation} />
       <LoadingIndicator isLoading={isLoading} />
       {errorMsg && <Text>{errorMsg}</Text>}

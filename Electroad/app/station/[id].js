@@ -6,12 +6,14 @@ import {
   Provider,
   ProgressBar,
 } from "react-native-paper";
+import { router, useLocalSearchParams } from 'expo-router';
 import { View, ScrollView } from "react-native";
 import IssueButton from "@/Components/IssueButton";
 import AppBar from "@/Components/AppBar";
 
-export default function StationPage({ stationName, location }) {
+export default function StationPage() {
   const theme = useTheme();
+  const station_id = useLocalSearchParams();
 
   const stationStyles = {
     container: {
@@ -49,7 +51,7 @@ export default function StationPage({ stationName, location }) {
             <Card.Content></Card.Content>
             <Card.Cover source={{ uri: "https://picsum.photos/700" }} />
             <Card.Actions>
-              <Button style={{ width: "80%" }} onPress={() => {}}>Book a slot</Button>
+              <Button style={{ width: "80%" }} onPress={() => {router.navigate(`/booking/${station_id}`)}}>Book a slot</Button>
             </Card.Actions>
           </Card>
           <ScrollView style={{ width: "100%", paddingHorizontal: 30, gap: 10 }}>
@@ -80,8 +82,8 @@ export default function StationPage({ stationName, location }) {
               </Button>
               <View style={{ marginHorizontal: 10 }}>
                 <IssueButton
-                  stationName={"Thiruvanmaiyur"}
-                  portId={11}
+                  station_id={"220"}
+                  port_id={289}
                   portType={"CCS"}
                 />
               </View>
