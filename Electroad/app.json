@@ -22,7 +22,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.varunkarthikt.Electroad"
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -30,6 +31,14 @@
     },
     "plugins": [
       "expo-router"
-    ]
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "1456925c-cb6a-409d-a77f-1f8baf8a9e4f"
+      }
+    }
   }
 }
