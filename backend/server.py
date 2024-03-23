@@ -106,44 +106,6 @@ def update_ratings():
             except Exception as e:
                 return jsonify({'error': str(e)}), 500
             
-@app.post('/documents')
-def get_documents():
-    try:
-        data = request.get_json()
-        station_id = data.get('station_id')
-        documents = collection_station.find({'station_id': station_id}, {'_id': 0})
-        collection_station = db['station']
-        collection_ports = db['ports']
-
-        documents = collection_station.find({'station_id': station_id})
-        all_documents = []
-        for doc in documents:
-            # Convert ObjectId fields to string representation
-            doc['_id'] = str(doc.get('_id')) if '_id' in doc else None
-            for key, value in doc.items():
-                if isinstance(value, ObjectId):
-                    doc[key] = str(value)
-                elif isinstance(value, Timestamp):
-                    doc[key] = datetime.datetime.fromtimestamp(value.time).strftime('%Y-%m-%d %H:%M:%S')
-            all_documents.append(doc)
-
-       
-        document = collection_ports.find_one({'station_id': station_id})
-        if document:
-            
-            document['_id'] = str(document.get('_id')) if '_id' in document else None
-            for key, value in document.items():
-                if isinstance(value, ObjectId):
-                    document[key] = str(value)
-                elif isinstance(value, Timestamp):
-                    document[key] = datetime.datetime.fromtimestamp(value.time).strftime('%Y-%m-%d %H:%M:%S')
-
-            return jsonify({'station_documents': all_documents, 'port_document': document}), 200
-        else:
-            return jsonify({'error': 'Station not found'}), 404
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-    
 @app.post('/documents_id')
 def documents_id():
     try:
@@ -152,29 +114,26 @@ def documents_id():
         collection_station = db['station']
         documents_station = collection_station.find({'station_id': station_id})
         
-        # Convert documents_station cursor to a list of dictionaries
         station_documents = []
         for doc in documents_station:
-            doc['_id'] = str(doc.get('_id')) if '_id' in doc else None
-            for key, value in doc.items():
-                if isinstance(value, ObjectId):
-                    doc[key] = str(value)
-                elif isinstance(value, Timestamp):
-                    doc[key] = datetime.datetime.fromtimestamp(value.time).strftime('%Y-%m-%d %H:%M:%S')
-            station_documents.append(doc)
-
+            no_of_ports = doc.get('no_of_ports')  
+            station_documents.append(no_of_ports)  
+        
         collection_ports = db['ports']
         documents_ports = collection_ports.find({'station_id': station_id})
         
-        # Convert documents_ports cursor to a list of dictionaries
         port_documents = []
         for doc in documents_ports:
-            doc['_id'] = str(doc.get('_id')) if '_id' in doc else None
+            # Exclude the _id key from the document
+            doc.pop('_id', None)
+            
+            # Format other fields if needed
             for key, value in doc.items():
                 if isinstance(value, ObjectId):
                     doc[key] = str(value)
                 elif isinstance(value, Timestamp):
                     doc[key] = datetime.datetime.fromtimestamp(value.time).strftime('%Y-%m-%d %H:%M:%S')
+            
             port_documents.append(doc)
 
         return jsonify({'station_documents': station_documents, 'port_documents': port_documents}), 200
