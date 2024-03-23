@@ -13,8 +13,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogTrigger,
-  } from "@/components/ui/alert-dialog"
-
+} from "@/components/ui/alert-dialog";
 
 ChartJS.register(
     ArcElement,
@@ -71,13 +70,31 @@ const Home = () => {
         }
     };
 
+    const handlePortEnable = async (portId) => {
+        try {
+            const response = await axios.post('http://localhost:5000/update_issue', {
+                "station_id": 100,
+                "port_id": portId,
+                "condition": "disable"
+            });
+            console.log(response);
+            setPortData(response.data.port_documents);
+            // Handle success or any further actions here
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     return (
         <>
             <div className='bg-[#0f172a] h-[50px] text-[#ffffff] font-poppins flex justify-around items-center flex-wrap'>
-                <div>Home</div>
-                <div>Home</div>
-                <div>Home</div>
+                <div></div>
+                <div>ELECTRODE 
+                <span className="material-symbols-outlined  relative top-[5px] color-[red]">
+                    bolt
+                </span>
+                </div>
+                <div></div>
             </div>
             <Button>Click me</Button>
             <div className='flex justify-around items-center gap-10 max-w-full'>
@@ -85,28 +102,34 @@ const Home = () => {
                     const filteredLabels = Object.keys(port.issue).filter(label => port.issue[label] > 0);
                     const filteredData = filteredLabels.map(label => port.issue[label]);
 
+                    // Set backgroundColor to yellow if port condition is "disable", else use default colors
+                    const backgroundColor = port.condition === "disable" ? 'rgba(255, 206, 86, 0.2)' : [
+                        'rgba(255,99,132,0.2)',
+                        'rgba(54,162,235,0.2)',
+                        'rgba(255,206,86,0.2)',
+                        'rgba(75,192,192,0.2)',
+                        'rgba(153,102,255,0.2)',
+                    ];
+
+                    // Set borderColor to yellow if port condition is "disable", else use default colors
+                    const borderColor = port.condition === "disable" ? 'rgba(255, 206, 86, 1)' : [
+                        'rgba(255,99,132,1)',
+                        'rgba(54,162,235,1)',
+                        'rgba(255,206,86,1)',
+                        'rgba(75,192,192,1)',
+                        'rgba(153,102,255,1)',
+                    ];
+
                     return (
-                        <div key={index } >
-                            <Doughnut 
+                        <div key={index}>
+                            <Doughnut
                                 data={{
                                     labels: filteredLabels,
                                     datasets: [{
                                         label: 'Port Data',
                                         data: filteredData,
-                                        backgroundColor: [
-                                            'rgba(255,99,132,0.2)',
-                                            'rgba(54,162,235,0.2)',
-                                            'rgba(255,206,86,0.2)',
-                                            'rgba(75,192,192,0.2)',
-                                            'rgba(153,102,255,0.2)',
-                                        ],
-                                        borderColor: [
-                                            'rgba(255,99,132,1)',
-                                            'rgba(54,162,235,1)',
-                                            'rgba(255,206,86,1)',
-                                            'rgba(75,192,192,1)',
-                                            'rgba(153,102,255,1)',
-                                        ],
+                                        backgroundColor: backgroundColor,
+                                        borderColor: borderColor,
                                         borderWidth: 1
                                     }]
                                 }}
@@ -119,23 +142,22 @@ const Home = () => {
                                 <AlertDialogTrigger className=' w-[160px] h-[160px] rounded-full relative left-[40px] bottom-[180px]'></AlertDialogTrigger>
                                 <AlertDialogContent>
                                     <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        This action cannot be undone. This will enable the port to be accessible to the public.
-                                    </AlertDialogDescription>
+                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This action cannot be undone. Select one.
+                                        </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={()=>handlePortAccess(port.port_id)}>Continue</AlertDialogAction>
+                                        <AlertDialogAction onClick={() => handlePortEnable(port.port_id)}>Disable</AlertDialogAction>
+                                        <AlertDialogAction onClick={() => handlePortAccess(port.port_id)}>Enable</AlertDialogAction>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
                                     </AlertDialogFooter>
                                 </AlertDialogContent>
                             </AlertDialog>
-
                         </div>
                     );
                 })}
             </div>
-            
         </>
     );
 };
