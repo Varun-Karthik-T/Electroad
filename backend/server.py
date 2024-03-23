@@ -34,24 +34,28 @@ def dbconnection():
         print(e)
 
 dbconnection()
-def fetch_data(station_id, port_id):
+def fetch_data(station_id):
     try:
         collection = db['ports']
-        document = collection.find_one({'station_id': station_id, 'port_id': port_id})
+        cursor = collection.find({'station_id': station_id})
 
-        if document:
+        documents = []
+        for document in cursor:
             document.pop('_id', None)
             for key, value in document.items():
                 if isinstance(value, ObjectId):
                     document[key] = str(value)
                 elif isinstance(value, Timestamp):
                     document[key] = datetime.datetime.fromtimestamp(value.time).strftime('%Y-%m-%d %H:%M:%S')
+            documents.append(document)
 
-            return jsonify(document), 200
+        if documents:
+            return jsonify(documents), 200
         else:
             return jsonify({'error': 'Data not found'}), 404
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 def find_email(station_id, port_id):
     try:
@@ -219,7 +223,7 @@ def update_issue():
                 for doc in documents_station:
                     no_of_ports = doc.get('no_of_ports')  
                     station_documents.append(no_of_ports)  
-                return fetch_data(station_id, port_id)
+                return fetch_data(station_id)
                 
             except Exception as e:
                 return jsonify({'error': str(e)}), 500
