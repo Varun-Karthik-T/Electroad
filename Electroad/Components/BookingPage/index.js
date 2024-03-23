@@ -1,9 +1,11 @@
-import { Text, View } from "react-native";
-import { Link } from "expo-router";
+import { View } from "react-native";
 import { useTheme, Button } from "react-native-paper";
+import { Text } from 'react-native-paper';
+import IssueButton from "../IssueButton";
 
 export default function BookingPage() {
   const theme = useTheme();
+
   const styles = {
     container: {
       flex: 1,
@@ -20,11 +22,8 @@ export default function BookingPage() {
   };
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>ajay</Text>
-      <Link href="/about">
-        <Button mode="elevated">About</Button>
-      </Link>
-      <Button mode="contained">Summa</Button>
+      <Text style={styles.text}>ajajjy</Text>
+      <IssueButton stationName={"Thiruvanmiyur"} portId={11} portType={"CCS"}/>
     </View>
   );
 }
