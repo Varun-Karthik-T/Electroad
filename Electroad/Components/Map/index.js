@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import MapView, { Marker } from 'react-native-maps';
-import { StyleSheet, View, Text } from 'react-native';
-import * as Location from 'expo-location';
+import React, { useState, useEffect, useRef } from "react";
+import MapComponent from "./MapComponent";
+import LocationButton from "./LocationButton";
+import LoadingIndicator from "./LoadingIndicator";
+import * as Location from "expo-location";
+
+import data from "./data";
 
 const MapWithCurrentLocation = () => {
   const [point, setPoint] = useState({
@@ -37,24 +40,17 @@ const MapWithCurrentLocation = () => {
   }, []);
 
   return (
-    <View style={styles.container}>
-      <MapView style={styles.map} region={point}>
-        <Marker coordinate={point} title='marker' />
-      </MapView>
-      {errorMsg ? <Text>{errorMsg}</Text> : null}
-    </View>
+    <>
+      <MapComponent
+        region={point}
+        onMapReady={() => setIsLoading(false)}
+        data={data}
+      />
+      <LocationButton onPress={userLocation} />
+      <LoadingIndicator isLoading={isLoading} />
+      {errorMsg && <Text>{errorMsg}</Text>}
+    </>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-  },
-  map: {
-    flex: 1,
-  },
-});
 
 export default MapWithCurrentLocation;
