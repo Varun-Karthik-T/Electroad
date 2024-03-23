@@ -3,7 +3,8 @@ import MapComponent from "./MapComponent";
 import LocationButton from "./LocationButton";
 import LoadingIndicator from "./LoadingIndicator";
 import * as Location from "expo-location";
-import Route from "./route";
+
+import data from "./data";
 
 const MapWithCurrentLocation = () => {
   const [point, setPoint] = useState({
@@ -43,7 +44,11 @@ const MapWithCurrentLocation = () => {
 
   return (
     <>
-      <MapComponent region={point} onMapReady={() => setIsLoading(false)} />
+      <MapComponent
+        region={point}
+        onMapReady={() => setIsLoading(false)}
+        data={data}
+      />
       <LocationButton onPress={userLocation} />
       <LoadingIndicator isLoading={isLoading} />
       {errorMsg && <Text>{errorMsg}</Text>}
