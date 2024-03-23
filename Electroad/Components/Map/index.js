@@ -20,7 +20,6 @@ const MapWithCurrentLocation = () => {
       return;
     }
     let location = await Location.getCurrentPositionAsync({accuracy:Location.Accuracy.High});
-    console.log(location);
     setPoint({
       latitude: location.coords.latitude,
       longitude: location.coords.longitude,

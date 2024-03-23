@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Text, View, Modal, ScrollView } from "react-native";
-import { Button, Card, TextInput, List, Menu } from "react-native-paper";
+import { Button, Card, TextInput, List, Menu, RadioButton } from "react-native-paper";
 import { useTheme } from "react-native-paper";
 
 export default function ProfilePage() {
@@ -9,9 +9,12 @@ export default function ProfilePage() {
   const [selectedEV, setSelectedEV] = useState("");
   const [carName, setCarName] = useState("");
   const [batteryType, setBatteryType] = useState("");
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
+  const [cardDetails, setCardDetails] = useState({}); // Object to store card details
+  const [upiDetails, setUpiDetails] = useState("");
   const [userInformation, setUserInformation] = useState({
-    name: "John Doe",
-    email: "john.doe@example.com",
+    name: "Test User",
+    email: "test@example.com",
   });
   const [isMenuVisible, setIsMenuVisible] = useState(false);
 
@@ -20,6 +23,7 @@ export default function ProfilePage() {
     { name: "Nissan Leaf", batteryType: "Lithium-ion" },
     // Add more EV options as needed
   ];
+  const paymentMethods = ["UPI", "Cards", "Net Banking"];
 
   const styles = {
     container: {
@@ -89,6 +93,13 @@ export default function ProfilePage() {
       setCarName(selectedOption.name);
       setBatteryType(selectedOption.batteryType);
     }
+  };
+
+  const handlePaymentMethodChange = (value) => {
+    setSelectedPaymentMethod(value);
+    // Reset card details and UPI details when changing payment method
+    setCardDetails({});
+    setUpiDetails("");
   };
 
   const renderEditModal = () => {
@@ -183,17 +194,37 @@ export default function ProfilePage() {
           </Card.Content>
         </Card>
 
-        {renderCollapsibleSection("Account Settings", (
-          <View>
-            {/* Add options for managing account settings */}
-            <Text style={styles.text}>Account Settings</Text>
-          </View>
-        ))}
-
+      
         {renderCollapsibleSection("Payment Methods", (
           <View>
-            {/* Add options for managing saved payment methods */}
-            <Text style={styles.text}>Payment Methods</Text>
+            <RadioButton.Group
+              onValueChange={(value) => handlePaymentMethodChange(value)}
+              value={selectedPaymentMethod}
+            >
+              {paymentMethods.map((method, index) => (
+                <View key={index} style={{ flexDirection: "row", alignItems: "center" }}>
+                  <RadioButton value={method} />
+                  <Text style={{ marginLeft: 8 }}>{method}</Text>
+                </View>
+              ))}
+            </RadioButton.Group>
+            {/* Render additional components based on selected payment method */}
+            {selectedPaymentMethod === "Cards" && (
+              <TextInput
+                label="Card Details"
+                value={cardDetails}
+                onChangeText={(text) => setCardDetails(text)}
+                style={styles.input}
+              />
+            )}
+            {selectedPaymentMethod === "UPI" && (
+              <TextInput
+                label="UPI ID"
+                value={upiDetails}
+                onChangeText={(text) => setUpiDetails(text)}
+                style={styles.input}
+              />
+            )}
           </View>
         ))}
 
