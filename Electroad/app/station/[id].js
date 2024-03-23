@@ -70,7 +70,7 @@ export default function StationPage() {
               >
                 Book a slot
               </Button>
-              <IconButton icon="directions" onPress={() => router.navigate(`route/${station.id}`)} />
+              <IconButton icon="directions" onPress={() => {router.navigate(`route/${station.id}`)}} />
             </Card.Actions>
           </Card>
           <ScrollView style={{ width: "100%", paddingHorizontal: 30, gap: 10 }}>
@@ -135,7 +135,6 @@ export default function StationPage() {
                     </Card.Content>
                   </Card>
                 ))}
-                {result.map}
               </ScrollView>
             </View>
           </ScrollView>
