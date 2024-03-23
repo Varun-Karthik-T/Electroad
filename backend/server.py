@@ -34,24 +34,28 @@ def dbconnection():
         print(e)
 
 dbconnection()
-def fetch_data(station_id, port_id):
+def fetch_data(station_id):
     try:
         collection = db['ports']
-        document = collection.find_one({'station_id': station_id, 'port_id': port_id})
+        cursor = collection.find({'station_id': station_id})
 
-        if document:
+        documents = []
+        for document in cursor:
             document.pop('_id', None)
             for key, value in document.items():
                 if isinstance(value, ObjectId):
                     document[key] = str(value)
                 elif isinstance(value, Timestamp):
                     document[key] = datetime.datetime.fromtimestamp(value.time).strftime('%Y-%m-%d %H:%M:%S')
+            documents.append(document)
 
-            return jsonify(document), 200
+        if documents:
+            return jsonify(documents), 200
         else:
             return jsonify({'error': 'Data not found'}), 404
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 def find_email(station_id, port_id):
     try:
@@ -129,31 +133,35 @@ def get_station():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-
 @app.post('/update_ratings')
 def update_ratings():
-            try:
-                data = request.get_json()
-                station_id = data.get('station_id')
-                ratings = data.get('ratings')
+    try:
+        data = request.get_json()
+        station_id = data.get('station_id')
+        ratings = data.get('ratings')
+        feedback_content = data.get('feedback_content')
+        collection = db['station']
+        document = collection.find_one({'station_id': station_id})
 
-                collection = db['station']
-                document = collection.find_one({'station_id': station_id})
+        if document:
+            no_of_ratings = document.get('no_of_ratings', 0)
+            overall_ratings = document.get('overall_ratings', 0)
 
-                if document:
-                    no_of_ratings = document.get('no_of_ratings', 0)
-                    overall_ratings = document.get('overall_ratings', 0)
-                    document['no_of_ratings'] = round((overall_ratings + ratings) / (no_of_ratings + 1))
-                    collection.update_one({'_id': document['_id']}, {'$set': {'no_of_ratings': document['no_of_ratings']}})
+            calc_overall_ratings = ((overall_ratings * no_of_ratings) + ratings) / (no_of_ratings + 1)
+            calc_overall_ratings = float(f'{calc_overall_ratings:.1f}')
+            fb = document.get('feedback_content', [])
+            fb.append(feedback_content)
+            no_of_ratings += 1
+            collection.update_one({'station_id': station_id}, {'$set': {'overall_ratings': calc_overall_ratings, 'feedback_content': fb, 'no_of_ratings': no_of_ratings}})
 
-                    return jsonify({'message': 'No. of ratings updated successfully'}), 200
-                else:
-                    return jsonify({'error': 'Station not found'}), 404
-            except Exception as e:
-                return jsonify({'error': str(e)}), 500
-            
-@app.post('/documents_id')
-def documents_id():
+            return jsonify({'message': 'Ratings updated successfully'}), 200
+        else:
+            return jsonify({'error': 'Station not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.post('/ports_id')
+def ports_id():
     try:
         data = request.get_json()
         station_id = data.get('station_id')
@@ -192,26 +200,29 @@ def update_issue():
                 condition = data.get('condition')
                 port_id = data.get('port_id')
 
-                receiver_email = find_email(station_id, port_id)
-                subject = "subject"
-                message = "message"
+                if condition == "working" and find_email(station_id, port_id):
+                    receiver_email = find_email(station_id, port_id)
+                    subject = "subject"
+                    message = "message"
 
-                msg = MIMEMultipart()
-                msg['From'] = EMAIL_USER
-                msg['To'] = receiver_email
-                msg['Subject'] = subject
+                    msg = MIMEMultipart()
+                    msg['From'] = EMAIL_USER
+                    msg['To'] = receiver_email
+                    msg['Subject'] = subject
 
-                msg.attach(MIMEText(message, 'plain'))
-                server = smtplib.SMTP(EMAIL_HOST, EMAIL_PORT)
-                server.starttls()
-                server.login(EMAIL_USER, EMAIL_PASSWORD)
-                server.sendmail(EMAIL_USER, receiver_email, msg.as_string())
-                server.quit()
-
-                if condition == "working":
+                    msg.attach(MIMEText(message, 'plain'))
+                    server = smtplib.SMTP(EMAIL_HOST, EMAIL_PORT)
+                    server.starttls()
+                    server.login(EMAIL_USER, EMAIL_PASSWORD)
+                    server.sendmail(EMAIL_USER, receiver_email, msg.as_string())
+                    server.quit()
                     collection = db['ports']
                     collection.update_many({'port_id': port_id , 'station_id': station_id}, {'$set': {'issue.port damage': 0, 'issue.slow charging': 0, 'condition': 'working', 'issue.not connecting': 0, 'issue.connecting but not charging': 0}})
                     delete_issue(station_id, port_id)
+                elif condition == "working":
+                    collection = db['ports']
+                    collection.update_many({'port_id': port_id , 'station_id': station_id}, {'$set': {'issue.port damage': 0, 'issue.slow charging': 0, 'condition': 'working', 'issue.not connecting': 0, 'issue.connecting but not charging': 0}})
+
                 elif condition == "disable":
                      collection = db['ports']
                      collection.update_many({'port_id': port_id , 'station_id': station_id}, {'$set': {'condition': 'disable'}})
@@ -220,7 +231,7 @@ def update_issue():
                 for doc in documents_station:
                     no_of_ports = doc.get('no_of_ports')  
                     station_documents.append(no_of_ports)  
-                return fetch_data(station_id, port_id)
+                return fetch_data(station_id)
                 
             except Exception as e:
                 return jsonify({'error': str(e)}), 500
@@ -274,5 +285,24 @@ def send_email():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
+
+@app.post('/get_station_details')
+def get_station_details():
+    try:
+        data = request.get_json()
+        station_id = data.get('station_id')
+
+        collection = db['station']
+        cursor = collection.find({'station_id': station_id})
+
+        documents = []
+        for document in cursor:
+            document.pop('_id', None)
+            documents.append(document)
+
+        return jsonify(documents), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+        
 if __name__ == '__main__':
     app.run(debug=True)
