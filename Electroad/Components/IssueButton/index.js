@@ -11,6 +11,8 @@ import {
 import { useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { issueList } from "@/constants/index.js";
+import axios from "axios"
+import { apiURL } from "@/constants";
 
 const styles = StyleSheet.create({
   menuStyle: {
@@ -18,7 +20,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export default function IssueButton({ stationName, portType, portId }) {
+export default function IssueButton({ station_id,  port_id }) {
   const theme = useTheme();
 
   const [visible, setVisible] = useState(false);
@@ -26,7 +28,22 @@ export default function IssueButton({ stationName, portType, portId }) {
   const [issueType, setIssueType] = useState("");
   const [showDropDown, setShowDropDown] = useState(false);
 
-  const hideDialog = () => setVisible(false);
+  function submitReview() {
+    axios.post(apiURL + "issue", {
+      station_id: station_id,
+      port_id: port_id,
+      issueType,
+      Brief,
+    })
+    .then((response) => {
+      console.log(response.data);
+      setVisible(false);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+
+  }
 
   return (
     <>
@@ -71,7 +88,7 @@ export default function IssueButton({ stationName, portType, portId }) {
             </View>
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={hideDialog}>Submit</Button>
+            <Button onPress={submitReview}>Submit</Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
