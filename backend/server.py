@@ -2,12 +2,20 @@ from flask import Flask, jsonify, request
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from flask_cors import CORS
-from bson import ObjectId 
+from bson import ObjectId
 from bson import Timestamp
 import datetime
-
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 app = Flask(__name__)
 CORS(app)
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USER = 'hack.binary.potatoes@gmail.com' 
+EMAIL_PASSWORD = 'ggfz qcnu deex rviq'  
+
 
 db = None
 
@@ -174,5 +182,36 @@ def add_issue():
                     return jsonify({'message': 'Issue added successfully'}), 200
                 except Exception as e:
                     return jsonify({'error': str(e)}), 500
+                
+@app.post('/send_email')
+def send_email():
+    try:
+        data = request.get_json()
+        receiver_email = data.get('receiver_email')
+        subject = data.get('subject')
+        message = data.get('message')
+
+        # Create message container
+        msg = MIMEMultipart()
+        msg['From'] = EMAIL_USER
+        msg['To'] = receiver_email
+        msg['Subject'] = subject
+
+        # Attach the message to the email
+        msg.attach(MIMEText(message, 'plain'))
+
+        # Setup the SMTP server
+        server = smtplib.SMTP(EMAIL_HOST, EMAIL_PORT)
+        server.starttls()
+        server.login(EMAIL_USER, EMAIL_PASSWORD)
+
+        # Send the email
+        server.sendmail(EMAIL_USER, receiver_email, msg.as_string())
+        server.quit()
+
+        return jsonify({'message': 'Email sent successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
 if __name__ == '__main__':
     app.run(debug=True)
