@@ -6,14 +6,25 @@ import {
   Provider,
   ProgressBar,
 } from "react-native-paper";
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from "expo-router";
 import { View, ScrollView } from "react-native";
 import IssueButton from "@/Components/IssueButton";
 import AppBar from "@/Components/AppBar";
+import { mapData } from "@/constants";
+
+function filterLeisure(id, data) {
+  return data.leisure
+    .filter(item => item.id === id)
+    .map(({ leisure_id, name, category }) => ({ leisure_id, name, category }));
+}
 
 export default function StationPage() {
   const theme = useTheme();
   const station_id = useLocalSearchParams();
+  console.log("Station: ", station_id.id)
+
+  let result = filterLeisure(station_id.id,mapData);
+  console.log(result);
 
   const stationStyles = {
     container: {
@@ -51,7 +62,14 @@ export default function StationPage() {
             <Card.Content></Card.Content>
             <Card.Cover source={{ uri: "https://picsum.photos/700" }} />
             <Card.Actions>
-              <Button style={{ width: "80%" }} onPress={() => {router.navigate(`/booking/${station_id}`)}}>Book a slot</Button>
+              <Button
+                style={{ width: "80%" }}
+                onPress={() => {
+                  router.navigate(`/booking/${station_id}`);
+                }}
+              >
+                Book a slot
+              </Button>
             </Card.Actions>
           </Card>
           <ScrollView style={{ width: "100%", paddingHorizontal: 30, gap: 10 }}>

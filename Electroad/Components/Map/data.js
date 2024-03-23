@@ -26,10 +26,6 @@ leisure : [
         name: "Jeyabal Juice",
         category: "Food",
         latitude: 11.1271,
-        leisure_id: 104,
-        name: "Trichy Shopping Mall",
-        category: "Shopping Mall",
-        latitude: 11.1274,
         longitude: 78.6522,
         },
         {

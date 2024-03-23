@@ -15,9 +15,7 @@ export default function BookingPage() {
 
   const fetchBookingData = () => {
     setRefreshing(true);
-    // Simulating asynchronous data fetching
     setTimeout(() => {
-      // Sample booking data (past and active)
       const pastBookings = [
         {
           id: 1,
