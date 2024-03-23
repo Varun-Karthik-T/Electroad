@@ -36,6 +36,51 @@ const textCenter = (portId) => ({
     }
 });
 
+const MemoizedDoughnutChart = React.memo(({ port }) => {
+    const filteredLabels = Object.keys(port.issue).filter(label => port.issue[label] > 0);
+    const filteredData = filteredLabels.map(label => port.issue[label]);
+
+    // Set backgroundColor to yellow if port condition is "disable", else use default colors
+    const backgroundColor = port.condition === "disable" ? 'rgba(255, 206, 86, 0.2)' : [
+        'rgba(255,99,132,0.2)',
+        'rgba(54,162,235,0.2)',
+        'rgba(255,206,86,0.2)',
+        'rgba(75,192,192,0.2)',
+        'rgba(153,102,255,0.2)',
+    ];
+
+    // Set borderColor to yellow if port condition is "disable", else use default colors
+    const borderColor = port.condition === "disable" ? 'rgba(255, 206, 86, 1)' : [
+        'rgba(255,99,132,1)',
+        'rgba(54,162,235,1)',
+        'rgba(255,206,86,1)',
+        'rgba(75,192,192,1)',
+        'rgba(153,102,255,1)',
+    ];
+
+    return (
+        <Doughnut
+            data={{
+                labels: filteredLabels,
+                datasets: [{
+                    label: 'Port Data',
+                    data: filteredData,
+                    backgroundColor: backgroundColor,
+                    borderColor: borderColor,
+                    borderWidth: 1
+                }]
+            }}
+            options={{}}
+            height={250}
+            width={250}
+            plugins={[textCenter(port.port_id.toString())]}
+        />
+    );
+}, (prevProps, nextProps) => {
+    // Memoization function to determine if the component should re-render
+    // Only re-render if portData or its properties change
+    return prevProps.port === nextProps.port;
+});
 
 const Home = () => {
     const [portData, setPortData] = useState([]);
@@ -43,7 +88,7 @@ const Home = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await axios.post('http://localhost:5000/documents_id', {
+                const response = await axios.post('http://localhost:5000/ports_id', {
                     "station_id": 100
                 });
                 console.log(response);
@@ -64,9 +109,25 @@ const Home = () => {
             });
             console.log(response);
             setPortData(response.data.port_documents);
+            //
+            const fetchData = async () => {
+                try {
+                    const response = await axios.post('http://localhost:5000/ports_id', {
+                        "station_id": 100
+                    });
+                    console.log(response);
+                    setPortData(response.data.port_documents);
+                } catch (error) {
+                    console.error(error);
+                }
+            };
+            fetchData();
+
+
+
             // Handle success or any further actions here
         } catch (error) {
-            console.error(error);
+            console.error("Error enabling port:", error);
         }
     };
 
@@ -79,9 +140,23 @@ const Home = () => {
             });
             console.log(response);
             setPortData(response.data.port_documents);
+            //
+            //
+            const fetchData = async () => {
+                try {
+                    const response = await axios.post('http://localhost:5000/ports_id', {
+                        "station_id": 100
+                    });
+                    console.log(response);
+                    setPortData(response.data.port_documents);
+                } catch (error) {
+                    console.error(error);
+                }
+            };
+            fetchData();
             // Handle success or any further actions here
         } catch (error) {
-            console.error(error);
+            console.error("Error disabling port:", error);
         }
     };
 
@@ -98,66 +173,27 @@ const Home = () => {
             </div>
             <Button>Click me</Button>
             <div className='flex justify-around items-center gap-10 max-w-full'>
-                {portData.map((port, index) => {
-                    const filteredLabels = Object.keys(port.issue).filter(label => port.issue[label] > 0);
-                    const filteredData = filteredLabels.map(label => port.issue[label]);
-
-                    // Set backgroundColor to yellow if port condition is "disable", else use default colors
-                    const backgroundColor = port.condition === "disable" ? 'rgba(255, 206, 86, 0.2)' : [
-                        'rgba(255,99,132,0.2)',
-                        'rgba(54,162,235,0.2)',
-                        'rgba(255,206,86,0.2)',
-                        'rgba(75,192,192,0.2)',
-                        'rgba(153,102,255,0.2)',
-                    ];
-
-                    // Set borderColor to yellow if port condition is "disable", else use default colors
-                    const borderColor = port.condition === "disable" ? 'rgba(255, 206, 86, 1)' : [
-                        'rgba(255,99,132,1)',
-                        'rgba(54,162,235,1)',
-                        'rgba(255,206,86,1)',
-                        'rgba(75,192,192,1)',
-                        'rgba(153,102,255,1)',
-                    ];
-
-                    return (
-                        <div key={index}>
-                            <Doughnut
-                                data={{
-                                    labels: filteredLabels,
-                                    datasets: [{
-                                        label: 'Port Data',
-                                        data: filteredData,
-                                        backgroundColor: backgroundColor,
-                                        borderColor: borderColor,
-                                        borderWidth: 1
-                                    }]
-                                }}
-                                options={{}}
-                                height={250}
-                                width={250}
-                                plugins={[textCenter(port.port_id.toString())]}
-                            />
-                            <AlertDialog>
-                                <AlertDialogTrigger className=' w-[160px] h-[160px] rounded-full relative left-[40px] bottom-[180px]'></AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            This action cannot be undone. Select one.
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        {/* <AlertDialogAction onClick={() => handlePortEnable(port.port_id)}>Disable</AlertDialogAction> */}
-                                        {port.condition !== "disable" && <AlertDialogAction onClick={() => handlePortEnable(port.port_id)}>Disable</AlertDialogAction>}
-                                        <AlertDialogAction onClick={() => handlePortAccess(port.port_id)}>Enable</AlertDialogAction>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
-                        </div>
-                    );
-                })}
+                {portData && portData.map((port, index) => (
+                    <div key={index}>
+                        <MemoizedDoughnutChart port={port} />
+                        <AlertDialog>
+                            <AlertDialogTrigger className=' w-[160px] h-[160px] rounded-full relative left-[40px] bottom-[180px]'></AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This action cannot be undone. Select one.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    {port.condition !== "disable" && <AlertDialogAction onClick={() => handlePortEnable(port.port_id)}>Disable</AlertDialogAction>}
+                                    <AlertDialogAction onClick={() => handlePortAccess(port.port_id)}>Enable</AlertDialogAction>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </div>
+                ))}
             </div>
         </>
     );
