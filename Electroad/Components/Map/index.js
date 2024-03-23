@@ -15,6 +15,7 @@ const MapWithCurrentLocation = () => {
   });
 
   const [errorMsg, setErrorMsg] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const userLocation = async () => {
     let { status } = await Location.requestForegroundPermissionsAsync();
