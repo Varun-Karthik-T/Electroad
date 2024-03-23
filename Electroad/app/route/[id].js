@@ -1,21 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { useLocalSearchParams } from 'expo-router';
 import MapViewDirections from 'react-native-maps-directions';
+import { mapData } from '../../constants/index';
 
-const Route = ({ olatitude, olongitude, dlatitude, dlongitude }) => {
-  const [destination, setDestination] = useState({
-    latitude: dlatitude,
-    longitude: dlongitude,
-  });
+const Route = () => {  
+  const { station } = useLocalSearchParams();
+  const [location, setLocation] = useState(null);
+  const [destination, setDestination] = useState(null);
 
-  const station_id = useLocalSearchParams();
+  useEffect(() => {
+    (async () => {
+      let { coords } = await Location.getCurrentPositionAsync({accuracy:Location.Accuracy.High});
+      setLocation(coords);
 
-  const [origin, setOrigin] = useState({
-    latitude: olatitude,
-    longitude: olongitude,
-  });
+      let destination = mapData.ev.find((loc) => loc.id === parseInt(station));
+      if (destination) {
+        setDestination({
+          latitude: destination.latitude,
+          longitude: destination.longitude,
+        });
+      }
+    })();
+  }, []);
+
+  if (!location || !destination) {
+    return null; // or a loading indicator
+  }
+
+  const origin = {
+    latitude: location.latitude,
+    longitude: location.longitude,
+  };
+
+
 
   return (
     <View style={styles.container}>
