@@ -1,12 +1,14 @@
 import{useState} from 'react';
 import { BottomNavigation, Text } from 'react-native-paper';
 import HomePage from '../HomePage';
+import BookingPage from '../BookingPage';
+import ProfilePage from '../ProfilePage';
 
 const HomeRoute = () => <HomePage />;
 
-const BookingsRoute = () => <Text>Bookings</Text>;
+const BookingsRoute = () => <BookingPage />;
 
-const ProfileRoute = () => <Text>Profile</Text>;
+const ProfileRoute = () => <ProfilePage />;
 
 const BottomBar = () => {
   const [index, setIndex] = useState(0);
