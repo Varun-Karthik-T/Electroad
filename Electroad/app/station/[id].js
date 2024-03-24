@@ -60,7 +60,10 @@ export default function StationPage() {
           <Card style={stationStyles.card}>
             <Card.Title title="Card Title" subtitle="Card Subtitle" />
             <Card.Content></Card.Content>
-            <Card.Cover style={{marginHorizontal: 20}} source={{ uri: "https://picsum.photos/700" }} />
+            <Card.Cover
+              style={{ marginHorizontal: 20 }}
+              source={{ uri: "https://picsum.photos/700" }}
+            />
             <Card.Actions>
               <Button
                 style={{ width: "80%" }}
@@ -70,7 +73,13 @@ export default function StationPage() {
               >
                 Book a slot
               </Button>
-              <IconButton icon="directions" onPress={() => {router.navigate(`route/${station.id}`)}} />
+              <IconButton
+                icon="directions"
+                onPress={() => {
+                  console.log("Moving to : " + station.id);
+                  router.navigate(`route/${station.id}`);
+                }}
+              />
             </Card.Actions>
           </Card>
           <ScrollView style={{ width: "100%", paddingHorizontal: 30, gap: 10 }}>
