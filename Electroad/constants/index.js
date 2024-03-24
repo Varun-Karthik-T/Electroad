@@ -124,6 +124,7 @@ let mapData = {
     {
       id: 300,
       leisure_id: 305,
+      
       name: "Kora Food Street",
       category: "Food",
       latitude: 13.0842,

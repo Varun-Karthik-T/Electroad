@@ -13,7 +13,6 @@ import { useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { issueList } from "@/constants/index.js";
 import axios from "axios";
-import { apiURL } from "@/constants";
 
 const styles = StyleSheet.create({
   menuStyle: {
@@ -23,6 +22,7 @@ const styles = StyleSheet.create({
 
 export default function IssueButton({ station_id, port_id, portType }) {
   const theme = useTheme();
+  const apiURL = "https://sdg-2024.onrender.com/";
 
   const [visible, setVisible] = useState(false);
   const [Brief, setBrief] = useState("");
@@ -33,6 +33,7 @@ export default function IssueButton({ station_id, port_id, portType }) {
   async function submitReview() {
     try {
       setLoading(true);
+      console.log(apiURL + "add_issue")
       const response = await axios.post(apiURL + "add_issue", {
         station_id: station_id,
         port_id: port_id,

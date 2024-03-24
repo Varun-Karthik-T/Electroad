@@ -12,16 +12,24 @@ import { View, ScrollView } from "react-native";
 import IssueButton from "@/Components/IssueButton";
 import AppBar from "@/Components/AppBar";
 import { mapData } from "@/constants";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 function filterLeisure(id, data) {
   return data.leisure
     .filter((item) => item.id === id)
-    .map(({ leisure_id, name, category }) => ({ leisure_id, name, category }));
+    .map(({ leisure_id, name, category, url }) => ({ leisure_id, name, category, url }));
 }
 
 export default function StationPage() {
   const theme = useTheme();
   const station = useLocalSearchParams();
+
+  const [title,setTitle] = useState('');
+  const [location,setLocation] = useState('');
+  const [ports,setPorts] = useState('');
+  const [ratingNo,setRatingNo] = useState('')
+  const [rating,setRating] = useState('')
 
   let result = filterLeisure(Number(station.id), mapData);
   console.log(result);
@@ -52,15 +60,37 @@ export default function StationPage() {
       paddingHorizontal: 10,
     },
   };
+
+  useEffect(() => {
+    async function fetchData() {
+      const response = await axios.post(
+        "https://sdg-2024.onrender.com/get_station_details",
+        {
+          station_id: Number(station.id),
+        }
+      );
+      setTitle(response.data[0].station_name)
+      setLocation(response.data[0].location)
+      setPorts(response.data[0].no_of_ports)
+      setRating(response.data[0].overall_ratings)
+      setRatingNo(response.data[0].no_of_ratings)
+    }
+    fetchData();
+  }, []);
   return (
     <>
       <Provider>
         <AppBar />
         <View style={stationStyles.container}>
           <Card style={stationStyles.card}>
-            <Card.Title title="Card Title" subtitle="Card Subtitle" />
-            <Card.Content></Card.Content>
-            <Card.Cover style={{marginHorizontal: 20}} source={{ uri: "https://picsum.photos/700" }} />
+            <Card.Title title={title} subtitle={location} />
+            <Card.Content>
+              <Text> No. of Charging ports: {ports}</Text>
+            </Card.Content>
+            <Card.Cover
+              style={{ marginHorizontal: 20 }}
+              source={{ uri: "https://picsum.photos/700" }}
+            />
             <Card.Actions>
               <Button
                 style={{ width: "80%" }}
@@ -70,7 +100,12 @@ export default function StationPage() {
               >
                 Book a slot
               </Button>
-              <IconButton icon="directions" onPress={() => {router.navigate(`route/${station.id}`)}} />
+              <IconButton
+                icon="directions"
+                onPress={() => {
+                  router.navigate(`route/${station.id}`);
+                }}
+              />
             </Card.Actions>
           </Card>
           <ScrollView style={{ width: "100%", paddingHorizontal: 30, gap: 10 }}>
@@ -84,10 +119,10 @@ export default function StationPage() {
                   marginTop: 10,
                 }}
               >
-                <Text variant="titleLarge"> 3.6 </Text>
+                <Text variant="titleLarge"> {rating} ({ratingNo}) </Text>
                 <ProgressBar
                   style={stationStyles.progress}
-                  animatedValue={3.6 / 5}
+                  animatedValue={rating/5}
                   color={"yellow"}
                   theme={theme.colors.primary}
                 />
@@ -101,7 +136,7 @@ export default function StationPage() {
               </Button>
               <View style={{ marginHorizontal: 10 }}>
                 <IssueButton
-                  station_id={"220"}
+                  station_id={Number(station.id)}
                   port_id={289}
                   portType={"CCS"}
                 />
@@ -112,7 +147,7 @@ export default function StationPage() {
             </View>
             <View style={{ marginVertical: 10 }}>
               <Text variant="titleSmall">
-                Places nearby to spend time while your wait
+                Places nearby to spend time while you wait
               </Text>
               <ScrollView horizontal={true} style={{ marginVertical: 10 }}>
                 {result.map((item, index) => (
@@ -128,7 +163,7 @@ export default function StationPage() {
                     <Card.Title title={item.name} />
                     <Card.Cover
                       style={{ marginHorizontal: 8 }}
-                      source={{ uri: "https://picsum.photos/700" }}
+                      source={{ uri: item.url }}
                     />
                     <Card.Content>
                       <Text>{item.category}</Text>
