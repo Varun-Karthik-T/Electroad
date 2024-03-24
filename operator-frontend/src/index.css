@@ -77,5 +77,17 @@
   }
 }
 
+body{
+  width: 100%;
+  height: 100%;
+  overflow-x:hidden;
+  background-color: black;
+}
 
-
+/* body{
+  background: linear-gradient(45deg, rgba(2,0,36,1) 15%, rgba(21,21,86,1) 44%, rgba(48,89,150,1) 59%, rgba(3,25,42,1) 85%, rgba(0,7,9,1) 98%, rgba(0,7,9,1) 98%);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+  font-family: 'Poppins', sans-serif;
+} */

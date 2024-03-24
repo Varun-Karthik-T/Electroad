@@ -5,15 +5,26 @@ import {
   useTheme,
   Provider,
   ProgressBar,
+  IconButton,
 } from "react-native-paper";
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from "expo-router";
 import { View, ScrollView } from "react-native";
 import IssueButton from "@/Components/IssueButton";
 import AppBar from "@/Components/AppBar";
+import { mapData } from "@/constants";
+
+function filterLeisure(id, data) {
+  return data.leisure
+    .filter((item) => item.id === id)
+    .map(({ leisure_id, name, category }) => ({ leisure_id, name, category }));
+}
 
 export default function StationPage() {
   const theme = useTheme();
-  const station_id = useLocalSearchParams();
+  const station = useLocalSearchParams();
+
+  let result = filterLeisure(Number(station.id), mapData);
+  console.log(result);
 
   const stationStyles = {
     container: {
@@ -49,9 +60,26 @@ export default function StationPage() {
           <Card style={stationStyles.card}>
             <Card.Title title="Card Title" subtitle="Card Subtitle" />
             <Card.Content></Card.Content>
-            <Card.Cover source={{ uri: "https://picsum.photos/700" }} />
+            <Card.Cover
+              style={{ marginHorizontal: 20 }}
+              source={{ uri: "https://picsum.photos/700" }}
+            />
             <Card.Actions>
-              <Button style={{ width: "80%" }} onPress={() => {router.navigate(`/booking/${station_id}`)}}>Book a slot</Button>
+              <Button
+                style={{ width: "80%" }}
+                onPress={() => {
+                  router.navigate(`/booking/${station.id}`);
+                }}
+              >
+                Book a slot
+              </Button>
+              <IconButton
+                icon="directions"
+                onPress={() => {
+                  console.log("Moving to : " + station.id);
+                  router.navigate(`route/${station.id}`);
+                }}
+              />
             </Card.Actions>
           </Card>
           <ScrollView style={{ width: "100%", paddingHorizontal: 30, gap: 10 }}>
@@ -96,42 +124,26 @@ export default function StationPage() {
                 Places nearby to spend time while your wait
               </Text>
               <ScrollView horizontal={true} style={{ marginVertical: 10 }}>
-                <Card style={{ marginHorizontal: 4 }}>
-                  <Card.Cover source={{ uri: "https://picsum.photos/700" }} />
-                  <Card.Content>
-                    <Text>Card content</Text>
-                  </Card.Content>
-                </Card>
-                <Card style={{ marginHorizontal: 4 }}>
-                  <Card.Cover source={{ uri: "https://picsum.photos/700" }} />
-                  <Card.Content>
-                    <Text>Card content</Text>
-                  </Card.Content>
-                </Card>
-                <Card style={{ marginHorizontal: 4 }}>
-                  <Card.Cover source={{ uri: "https://picsum.photos/700" }} />
-                  <Card.Content>
-                    <Text>Card content</Text>
-                  </Card.Content>
-                </Card>
-                <Card style={{ marginHorizontal: 4 }}>
-                  <Card.Cover source={{ uri: "https://picsum.photos/700" }} />
-                  <Card.Content>
-                    <Text>Card content</Text>
-                  </Card.Content>
-                </Card>
-                <Card style={{ marginHorizontal: 4 }}>
-                  <Card.Cover source={{ uri: "https://picsum.photos/700" }} />
-                  <Card.Content>
-                    <Text>Card content</Text>
-                  </Card.Content>
-                </Card>
-                <Card style={{ marginHorizontal: 4 }}>
-                  <Card.Cover source={{ uri: "https://picsum.photos/700" }} />
-                  <Card.Content>
-                    <Text>Card content</Text>
-                  </Card.Content>
-                </Card>
+                {result.map((item, index) => (
+                  <Card
+                    key={item.leisure_id}
+                    style={{
+                      marginHorizontal: 4,
+                      width: "40%",
+                      backgroundColor: theme.colors.secondaryContainer,
+                      marginRight: index === result.length - 1 ? 20 : 4,
+                    }}
+                  >
+                    <Card.Title title={item.name} />
+                    <Card.Cover
+                      style={{ marginHorizontal: 8 }}
+                      source={{ uri: "https://picsum.photos/700" }}
+                    />
+                    <Card.Content>
+                      <Text>{item.category}</Text>
+                    </Card.Content>
+                  </Card>
+                ))}
               </ScrollView>
             </View>
           </ScrollView>
