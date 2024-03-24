@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Appbar } from "react-native-paper";
+import { Appbar, Icon } from "react-native-paper";
 import { usePathname, router } from "expo-router";
 
 const AppBar = () => {
