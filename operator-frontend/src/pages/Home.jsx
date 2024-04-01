@@ -196,7 +196,7 @@ const Home = () => {
         <>
             <div className='bg-[#000] h-[70px] text-[#ffffff] text-[1.5rem] font-poppins flex justify-around items-center flex-wrap'>
                 <div></div>
-                <div>ELECTRODE 
+                <div>ELECTROAD 
                 <span className="material-symbols-outlined  relative top-[5px] color-[red]">
                     bolt
                 </span>
