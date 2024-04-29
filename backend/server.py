@@ -21,7 +21,7 @@ db = None
 
 def dbconnection():
     global db
-    url = "mongodb+srv://varunkarthikceg:KARthik#13@cluster0.bqdsvml.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"  # connection string here
+    url = ""  # connection string here
 
     client = MongoClient(url, server_api=ServerApi('1'))
 
