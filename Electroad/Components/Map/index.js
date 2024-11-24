@@ -18,6 +18,7 @@ const MapWithCurrentLocation = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const userLocation = async () => {
+  try{
     let { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
       setErrorMsg('Permission to access location was denied');
@@ -30,14 +31,22 @@ const MapWithCurrentLocation = () => {
       latitudeDelta: 0.8,
       longitudeDelta: 0.8,
     });
+
+    } catch (error) {
+        console.log(error);
+        setErrorMsg(error);
+    }
+
   };
 
   useEffect(() => {
-    const interval = setInterval(() => {
+const interval = setInterval(() => {
       userLocation();
-    }, 5000); 
+    }, 5000);
 
-    return () => clearInterval(interval);
+    userLocation();
+
+   return () => clearInterval(interval);
   }, []);
 
   return (
@@ -48,6 +57,7 @@ const MapWithCurrentLocation = () => {
         data={data}
       />
       <LocationButton onPress={userLocation} />
+      <LocationButton/>
       <LoadingIndicator isLoading={isLoading} />
       {errorMsg && <Text>{errorMsg}</Text>}
     </>

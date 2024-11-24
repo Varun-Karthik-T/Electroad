@@ -24,7 +24,7 @@ export default function ProfilePage() {
   const EVOptions = [
     { name: "Tesla Model S", batteryType: "Lithium-ion" },
     { name: "Nissan Leaf", batteryType: "Lithium-ion" },
-    // Add more EV options as needed
+
   ];
   const paymentMethods = ["UPI", "Cards", "Net Banking"];
 
