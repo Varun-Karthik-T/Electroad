@@ -30,7 +30,11 @@
       "bundler": "metro"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",[
+      "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow electroad to use your location."
+        }]
     ],
     "extra": {
       "router": {

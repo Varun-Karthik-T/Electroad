@@ -2,13 +2,13 @@ import * as React from "react";
 import { Appbar, Icon } from "react-native-paper";
 import { usePathname, router } from "expo-router";
 
-const AppBar = () => {
+const AppBar = ({title}) => {
   const pathname = usePathname();
   return (
     <>
       <Appbar.Header statusBarHeight={0} mode="center-aligned">
         {pathname != "/" && <Appbar.BackAction onPress={() => {router.back()}}/>}
-        <Appbar.Content title="Electroad" />
+          {title? <Appbar.Content title={title} />: <Appbar.Content title="Electroad" />}
       </Appbar.Header>
     </>
   );

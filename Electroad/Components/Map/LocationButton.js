@@ -12,12 +12,8 @@ const LocationButton = ({ onPress }) => {
     zIndex: 100,
     flexDirection: "column",
     gap: 10}}>
-      <FAB
-        icon="ev-station"
-      />
-      <FAB
-        icon="map-search"
-      />
+      
+   
       <FAB
         icon="crosshairs-gps"
         onPress={onPress}

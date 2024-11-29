@@ -15,7 +15,6 @@ const MapComponent = ({ region, onMapReady, data }) => {
         <Marker
           key={location.id}
           coordinate={{ latitude: location.latitude, longitude: location.longitude }}
-          // ev staion id here
           title={location.title}  onPress={() => {router.navigate(`/station/${location.id}`)}}
           pinColor="blue"
           

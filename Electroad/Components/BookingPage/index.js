@@ -78,6 +78,7 @@ export default function BookingPage() {
       flex: 1,
       backgroundColor: theme.colors.background,
       padding: 20,
+      rowGap:10
     },
     sectionTitle: {
       fontSize: 24,
@@ -103,6 +104,7 @@ export default function BookingPage() {
       flex: 1,
       justifyContent: "center",
       alignItems: "center",
+      gap:3,
       backgroundColor: "rgba(0, 0, 0, 0.5)",
     },
     modalContent: {
@@ -122,6 +124,7 @@ export default function BookingPage() {
     activityIndicator: {
       marginTop: 20,
     },
+
   });
 
   const handleViewDetails = (booking) => {
@@ -133,7 +136,7 @@ export default function BookingPage() {
     return (
       <View>
         <Text style={styles.sectionTitle}>{title}</Text>
-        <ScrollView horizontal={true}>
+        <ScrollView horizontal={true} style={styles.scroll}>
           {bookings.map((booking) => (
             <TouchableOpacity key={booking.id} onPress={() => handleViewDetails(booking)}>
               <Card style={styles.card}>

@@ -1,0 +1,21 @@
+[
+    {
+      "leisure_id": 1,
+      "name": "Coffee Spot",
+      "category": "Cafe",
+      "url": "https://www.posist.com/restaurant-times/wp-content/uploads/2023/07/How-To-Start-A-Coffee-Shop-Business-A-Complete-Guide.jpg"
+    },
+    {
+      "leisure_id": 2,
+      "name": "Green Park",
+      "category": "Park",
+      "url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-PkqDDOQ_FNfTW2LLHR3jZU8Uv_pzNoPmjA&s"
+    },
+    {
+      "leisure_id": 3,
+      "name": "City Library",
+      "category": "Library",
+      "url": "https://example.com/library.jpg"
+    }
+  ]
+  

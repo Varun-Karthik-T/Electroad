@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
-import MapViewDirections from 'react-native-maps-directions';
+import React, { useState } from "react";
+import { StyleSheet, View } from "react-native";
+import MapView, { Marker } from "react-native-maps";
+import MapViewDirections from "react-native-maps-directions";
 
 const Route = ({ olatitude, olongitude, dlatitude, dlongitude }) => {
   const [destination, setDestination] = useState({
@@ -22,16 +22,17 @@ const Route = ({ olatitude, olongitude, dlatitude, dlongitude }) => {
           latitude: (origin.latitude + destination.latitude) / 2,
           longitude: (origin.longitude + destination.longitude) / 2,
           latitudeDelta: Math.abs(origin.latitude - destination.latitude) + 1.0,
-          longitudeDelta: Math.abs(origin.longitude - destination.longitude) + 0.0,
+          longitudeDelta:
+            Math.abs(origin.longitude - destination.longitude) + 0.0,
         }}
       >
         <MapViewDirections
           origin={origin}
           destination={destination}
-          apikey= {process.env.EXPO_PUBLIC_GOOGLE_API_KEY}
+          apikey={process.env.EXPO_PUBLIC_GOOGLE_API_KEY}
           strokeWidth={2}
           strokeColor="red"
-          mode={'DRIVING'}
+          mode={"DRIVING"}
         />
         <Marker coordinate={origin} title="Starting Point" />
         <Marker coordinate={destination} title="Destination Point" />

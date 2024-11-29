@@ -12,8 +12,7 @@ export default function SlotBookingDetails() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
 
   const handleStartTimeChange = (time) => {
-    // Logic to calculate estimated charging time based on start time
-    const remainingHours = 2; // Assuming 2 hours charging time
+    const remainingHours = 2; 
     setEstimatedChargingTime(`${remainingHours} hours`);
     setEstimatedCost("$10");
     setStartTime(time);
@@ -24,10 +23,9 @@ export default function SlotBookingDetails() {
   };
 
   const handleConfirmBooking = () => {
-    // Logic to confirm booking and proceed with payment
-    // This function can be implemented based on the backend integration
+
     alert("Booking confirmed! Payment method: " + selectedPaymentMethod);
-    // Navigate to the home page or any other page after successful booking
+
     router.navigate("/");
   };
 
