@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 from config.db import get_client
 import os
 import sys
+from routes.auth import auth_bp
 
 app = Flask(__name__)
 
@@ -34,22 +35,24 @@ def register():
     user_id = db.users.insert_one({"email": email, "password": password}).inserted_id
     return jsonify({"message": "User registered successfully", "user_id": str(user_id)}), 201
 
-@app.route('/api/users/login', methods=['POST'])
-def login():
-    data = request.json
-    email = data.get('email')
-    password = data.get('password')
+# @app.route('/api/users/login', methods=['POST'])
+# def login():
+#     data = request.json
+#     email = data.get('email')
+#     password = data.get('password')
     
-    user = db.users.find_one({"email": email, "password": password})
-    if user:
-        return jsonify({"message": "Login successful", "user_id": str(user['_id'])}), 200
-    else:
-        return jsonify({"message": "Invalid email or password"}), 401
+#     user = db.users.find_one({"email": email, "password": password})
+#     if user:
+#         return jsonify({"message": "Login successful", "user_id": str(user['_id'])}), 200
+#     else:
+#         return jsonify({"message": "Invalid email or password"}), 401
 
 @app.route('/echo', methods=['POST'])
 def echo():
     data = request.json
     return jsonify(data), 200
+
+app.register_blueprint(auth_bp, url_prefix="/api")
 
 if __name__ == '__main__':
     print(f"Starting server on 0.0.0.0:5000 - server running successfully. Using DB: {db_name}")
