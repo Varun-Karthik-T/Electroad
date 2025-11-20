@@ -3,12 +3,13 @@ from config.db import get_client
 import os
 import sys
 from routes.auth import auth_bp
+from routes.profile import profile_bp
 
 app = Flask(__name__)
 
 try:
     client = get_client()
-    db_name = os.environ.get('DB_NAME', 'myapp')
+    db_name = os.environ.get('DB_NAME', 'mydatabase')
     db = client.get_database(db_name)
     print("DB connection successful.")
 except Exception as e:
@@ -40,6 +41,7 @@ def echo():
     return jsonify(data), 200
 
 app.register_blueprint(auth_bp, url_prefix="/api/users")
+app.register_blueprint(profile_bp, url_prefix="/api/users")
 
 if __name__ == '__main__':
     print(f"Starting server on 0.0.0.0:5000 - server running successfully. Using DB: {db_name}")
