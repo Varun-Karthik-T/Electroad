@@ -7,7 +7,7 @@ client = get_client()
 db = client["myapp"]
 users = db["users"]
 
-@profile_bp.route("/users/<email>/vehicles", methods=["GET"])
+@profile_bp.route("/<email>/vehicles", methods=["GET"])
 def get_user_vehicles(email):
 
     user = users.find_one({"email": email})
@@ -21,7 +21,7 @@ def get_user_vehicles(email):
 
 
 
-@profile_bp.route("/users/<email>/vehicles", methods=["POST"])
+@profile_bp.route("/<email>/vehicles", methods=["POST"])
 def update_user_vehicles(email):
     new_vehicles = request.get_json()
 

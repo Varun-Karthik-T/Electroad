@@ -41,7 +41,7 @@ def echo():
     return jsonify(data), 200
 
 app.register_blueprint(auth_bp, url_prefix="/api/users")
-app.register_blueprint(profile_bp, url_prefix="/api")
+app.register_blueprint(profile_bp, url_prefix="/api/users")
 
 if __name__ == '__main__':
     print(f"Starting server on 0.0.0.0:5000 - server running successfully. Using DB: {db_name}")
