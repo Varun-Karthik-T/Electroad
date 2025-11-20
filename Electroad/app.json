@@ -16,32 +16,46 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "config": {
+        "googleMapsApiKey": "AIzaSyCKzsNd06xXX2Jc_ZSp7Wui3O0buwTuJtM"
+      }
     },
     "android": {
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyCKzsNd06xXX2Jc_ZSp7Wui3O0buwTuJtM"
+        }
+      },
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.varunkarthikt.Electroad"
+      "package": "com.varunkarthikt.Electroad",
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
     "plugins": [
-      "expo-router",[
-      "expo-location",
+      "expo-router",
+      [
+        "expo-location",
         {
           "locationAlwaysAndWhenInUsePermission": "Allow electroad to use your location."
-        }]
+        }
+      ]
     ],
     "extra": {
       "router": {
         "origin": false
       },
       "eas": {
-        "projectId": "01afe01b-b4c5-4532-b0a7-d954b27f93b2"
+        "projectId": "1456925c-cb6a-409d-a77f-1f8baf8a9e4f"
       }
     },
     "newArchEnabled": true

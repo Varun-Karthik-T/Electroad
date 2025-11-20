@@ -80,7 +80,7 @@ export default function IndexPage() {
           alert("Invalid email or password");
         }
       } catch (error) {
-        alert("Login failed. Please try again.");
+        alert("Login failed. Check your credentials and try again.");
       } finally {
 
         setLoading(false);
