@@ -11,11 +11,11 @@ import { FAB } from "react-native-paper";
 import * as Location from "expo-location";
 import { router } from "expo-router";
 import LocationButton from "./LocationButton";
-import { getAllEvs } from "../api/api";
+import { getAllEvs, getAllLeisureSpots } from "../api/api";
 import LottieView from "lottie-react-native";
 import loader from "@/assets/map1.json";
 import { WebView } from "react-native-webview";
-import data, { sampleData } from "./data";
+//import data, { sampleData } from "./data";
 
 export default function MapWithCurrentLocation() {
   const [point, setPoint] = useState({
@@ -27,7 +27,8 @@ export default function MapWithCurrentLocation() {
   const [errorMsg, setErrorMsg] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [location, setLocation] = useState(null);
-  const [evStations, setEvStations] = useState([]); // State to hold EV station data
+  const [evStations, setEvStations] = useState([]);
+  const [leisure, setLeisureSpots] = useState([]); 
 
   const CurrentLocationFinder = async () => {
     try {
@@ -85,16 +86,28 @@ export default function MapWithCurrentLocation() {
     const fetchEVs = async () => {
       try {
         const response = await getAllEvs();
-        setEvStations(response?.data || sampleData.ev || []);
+        setEvStations(response?.data || []);
       } catch (error) {
         console.error("Error fetching EVs:", error);
         // fallback to sample data
-        setEvStations(sampleData.ev || []);
+        //setEvStations(sampleData.ev || []);
+      }
+    };
+
+    const fetchLeisureSpots = async () => {
+      try {
+        const response = await getAllLeisureSpots();
+        setLeisureSpots(response?.data || []);
+      } catch (error) {
+        console.error("Error fetching EVs:", error);
+        // fallback to sample data
+        //setEvStations(sampleData.ev || []);
       }
     };
 
     userLocation();
     fetchEVs();
+    fetchLeisureSpots();
   }, []);
 
   // Build HTML for WebView, inject sample data and current position
@@ -126,8 +139,8 @@ export default function MapWithCurrentLocation() {
     <script>
       const injected = ${JSON.stringify({
         point,
-        ev: sampleData.ev,
-        leisure: sampleData.leisure,
+        ev: evStations,
+        leisure: leisure,
       })};
 
       const startCenter = [injected.point.latitude || 13.0827, injected.point.longitude || 80.2707];
@@ -180,10 +193,10 @@ export default function MapWithCurrentLocation() {
             if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
               window.ReactNativeWebView.postMessage(JSON.stringify({ 
                 type: 'station_click', 
-                id: s.id,
+                id: s._id || s.id || s.name,
                 latitude: s.latitude,
                 longitude: s.longitude,
-                title: s.title,
+                title: s.name,
                 currentLat: startCenter[0],
                 currentLng: startCenter[1]
               }));

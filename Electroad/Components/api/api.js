@@ -2,7 +2,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const api = axios.create({
-  baseURL: "http://10.10.112.189:5000",
+  baseURL: "http://192.168.1.7:5000",
 });
 
 export const login = async (data) => {
@@ -62,5 +62,16 @@ export const getStationById = async (id) => {
     throw error;
   }
 };
+
+export const getAllLeisureSpots = async () => {
+  try {
+    const resp = await api.get("/api/leisure-spots");
+    return resp;
+  } catch (error) {
+    console.error("Failed to fetch all Leisure Spots:", error);
+    throw error;
+  }
+};
+
 
 

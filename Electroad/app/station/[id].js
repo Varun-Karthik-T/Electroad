@@ -14,7 +14,8 @@ import { View, ScrollView, StyleSheet } from "react-native";
 import { useEffect, useState } from "react";
 import AppBar from "@/Components/AppBar";
 import { ActivityIndicator } from "react-native-paper";
-import { sampleData } from "@/Components/Map/data";
+//import { sampleData } from "@/Components/Map/data";
+import { getAllEvs } from "../../Components/api/api";
 
 export default function StationPage() {
   const theme = {
@@ -32,12 +33,31 @@ export default function StationPage() {
   const { id, stationLat, stationLng, currentLat, currentLng, stationTitle } =
     params;
   const [isLoading, setIsLoading] = useState(false);
+  const [station, setStation] = useState(null);
+  const [nearbyLeisure, setNearbyLeisure] = useState([]);
+
 
   // Find station from sample data
-  const station = sampleData.ev.find((s) => s.id === parseInt(id));
+ // const station = sampleData.ev.find((s) => s.id === parseInt(id));
+ 
+
+    useEffect(() => {
+      const load = async () => {
+        const resp = await getAllEvs();
+        const allStations = resp?.data || [];
+
+        const s = allStations.find(x => 
+          x._id === id || x.id === id || x.name === id
+        );
+
+        setStation(s);
+      };
+      load();
+    }, []);
+
 
   // Find leisure activities near this station
-  const nearbyLeisure = sampleData.leisure.filter((l) => l.id === parseInt(id));
+ // const nearbyLeisure = sampleData.leisure.filter((l) => l.id === parseInt(id));
 
   const stationStyles = StyleSheet.create({
     container: {
@@ -126,11 +146,11 @@ export default function StationPage() {
   const displayLng = stationLng || station.longitude;
 
   // Sample port data for demo
-  const samplePorts = [
-    { type: "Type 2 (AC)", enabled: true, portId: "P001" },
-    { type: "CCS (DC)", enabled: true, portId: "P002" },
-    { type: "CHAdeMO (DC)", enabled: false, portId: "P003" },
-  ];
+  // const samplePorts = [
+  //   { type: "Type 2 (AC)", enabled: true, portId: "P001" },
+  //   { type: "CCS (DC)", enabled: true, portId: "P002" },
+  //   { type: "CHAdeMO (DC)", enabled: false, portId: "P003" },
+  // ];
 
   return (
     <PaperProvider theme={theme}>
@@ -164,14 +184,13 @@ export default function StationPage() {
           <Card style={stationStyles.card}>
             <Card.Content>
               <Text style={styles.sectionTitle}>⚡ Charging Ports</Text>
-              <Text>No. of Charging Ports: {samplePorts.length}</Text>
-              {samplePorts.map((port, index) => (
+              <Text>No. of Charging Ports: {station.connectors.length}</Text>
+
+              {station.connectors.map((port, index) => (
                 <View key={index} style={stationStyles.port}>
-                  <Text>Type: {port.type}</Text>
-                  <Text>
-                    Status: {port.enabled ? "✅ Available" : "❌ Unavailable"}
-                  </Text>
-                  {port.portId && <Text>Port ID: {port.portId}</Text>}
+                  <Text>Type: {port}</Text>
+                  <Text>Status: {station.status === "available" ? "✅ Available" : "❌ Unavailable"}</Text>
+                  <Text>Power Output: {station.power} kW</Text>
                 </View>
               ))}
               <View style={stationStyles.review}>
