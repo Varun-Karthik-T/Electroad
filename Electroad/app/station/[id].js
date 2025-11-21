@@ -7,14 +7,14 @@ import {
   IconButton,
   MD3LightTheme as DefaultTheme,
   PaperProvider,
+  Chip,
 } from "react-native-paper";
 import { router, useLocalSearchParams } from "expo-router";
 import { View, ScrollView, StyleSheet } from "react-native";
 import { useEffect, useState } from "react";
-import { getStationById } from "@/Components/api/api";
 import AppBar from "@/Components/AppBar";
 import { ActivityIndicator } from "react-native-paper";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { sampleData } from "@/Components/Map/data";
 
 export default function StationPage() {
   const theme = {
@@ -28,8 +28,16 @@ export default function StationPage() {
     },
   };
 
-  const station = useLocalSearchParams();
-  const [data, setData] = useState(null);
+  const params = useLocalSearchParams();
+  const { id, stationLat, stationLng, currentLat, currentLng, stationTitle } =
+    params;
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Find station from sample data
+  const station = sampleData.ev.find((s) => s.id === parseInt(id));
+
+  // Find leisure activities near this station
+  const nearbyLeisure = sampleData.leisure.filter((l) => l.id === parseInt(id));
 
   const stationStyles = StyleSheet.create({
     container: {
@@ -58,7 +66,6 @@ export default function StationPage() {
       padding: 10,
       marginVertical: 5,
       backgroundColor: theme.colors.surface,
-
       borderWidth: 1,
       borderColor: theme.colors.primary,
     },
@@ -72,17 +79,26 @@ export default function StationPage() {
     },
   });
 
-  useEffect(() => {
-    async function fetchData() {
-      AsyncStorage.setItem("stationID", station.id);
-      const response = await getStationById(station.id);
-      
-      setData(response.data);
-    }
-    fetchData();
-  }, [station.id]);
+  const handleGetDirections = () => {
+    const oLat = currentLat || params.currentLat;
+    const oLng = currentLng || params.currentLng;
+    const dLat = stationLat || station?.latitude;
+    const dLng = stationLng || station?.longitude;
+    const sTitle = stationTitle || station?.title;
 
-  if (!data) {
+    router.push({
+      pathname: "/route",
+      params: {
+        olatitude: oLat,
+        olongitude: oLng,
+        dlatitude: dLat,
+        dlongitude: dLng,
+        stationName: sTitle,
+      },
+    });
+  };
+
+  if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator animating={true} />
@@ -90,64 +106,184 @@ export default function StationPage() {
     );
   }
 
-  const { location, name, ports, rating } = data;
+  if (!station) {
+    return (
+      <PaperProvider theme={theme}>
+        <AppBar title="Station Details" />
+        <View style={styles.container}>
+          <Card style={styles.card}>
+            <Card.Content>
+              <Text style={styles.error}>⚠️ Station not found</Text>
+            </Card.Content>
+          </Card>
+        </View>
+      </PaperProvider>
+    );
+  }
+
+  const displayTitle = stationTitle || station.title;
+  const displayLat = stationLat || station.latitude;
+  const displayLng = stationLng || station.longitude;
+
+  // Sample port data for demo
+  const samplePorts = [
+    { type: "Type 2 (AC)", enabled: true, portId: "P001" },
+    { type: "CCS (DC)", enabled: true, portId: "P002" },
+    { type: "CHAdeMO (DC)", enabled: false, portId: "P003" },
+  ];
 
   return (
     <PaperProvider theme={theme}>
       <ScrollView>
-      <AppBar title="Station Details" />
-      <View style={stationStyles.container}>
-        <Card style={stationStyles.card}>
-          <Card.Title
-            title={name}
-            subtitle={`Lat: ${location.lat}, Lon: ${location.lon}`}
-          />
-          <Card.Cover
-            style={stationStyles.coverImage}
-            source={{
-              uri: "https://d382rz2cea0pah.cloudfront.net/wp-content/uploads/2023/06/Untitled-design-2023-06-21T142313.086.jpg",
-            }}
-          />
-          <Card.Actions style={stationStyles.actions}>
-            <Button
-              mode="contained"
-              onPress={() => {
-                router.navigate(`/booking/${station.id}`);
-              }}
-            >
-              Book a Slot
-            </Button>
-            <IconButton
-              icon="directions"
-              onPress={() => {
-                router.navigate(`route/${station.id}`);
+        <AppBar title="Station Details" />
+        <View style={stationStyles.container}>
+          <Card style={stationStyles.card}>
+            <Card.Title
+              title={`🔋 ${displayTitle}`}
+              subtitle={`Lat: ${displayLat}, Lon: ${displayLng}`}
+            />
+            <Card.Cover
+              style={stationStyles.coverImage}
+              source={{
+                uri: "https://d382rz2cea0pah.cloudfront.net/wp-content/uploads/2023/06/Untitled-design-2023-06-21T142313.086.jpg",
               }}
             />
-          </Card.Actions>
-        </Card>
-        <Card style={stationStyles.card}>
-          <Card.Content>
-            <Text>No. of Charging Ports: {ports.length}</Text>
-            {ports.map((port, index) => (
-              <View key={index} style={stationStyles.port}>
-                <Text>Type: {port.type}</Text>
-                <Text>
-                  Status: {port.enabled ? "Available" : "Unavailable"}
-                </Text>
-                {port.portId && <Text>Port ID: {port.portId}</Text>}
-              </View>
-            ))}
-            <View style={stationStyles.review}>
-              <Text>Rating: {rating} / 5</Text>
-              <ProgressBar progress={rating / 5} color={theme.colors.primary} />
-              <Button mode="contained-tonal" onPress={() => {}}>
-                Leave a Review
+            <Card.Actions style={stationStyles.actions}>
+              <Button
+                mode="contained"
+                onPress={() => {
+                  router.navigate(`/booking/${id}`);
+                }}
+              >
+                Book a Slot
               </Button>
-            </View>
-          </Card.Content>
-        </Card>
-      </View>
+              <IconButton icon="directions" onPress={handleGetDirections} />
+            </Card.Actions>
+          </Card>
+
+          <Card style={stationStyles.card}>
+            <Card.Content>
+              <Text style={styles.sectionTitle}>⚡ Charging Ports</Text>
+              <Text>No. of Charging Ports: {samplePorts.length}</Text>
+              {samplePorts.map((port, index) => (
+                <View key={index} style={stationStyles.port}>
+                  <Text>Type: {port.type}</Text>
+                  <Text>
+                    Status: {port.enabled ? "✅ Available" : "❌ Unavailable"}
+                  </Text>
+                  {port.portId && <Text>Port ID: {port.portId}</Text>}
+                </View>
+              ))}
+              <View style={stationStyles.review}>
+                <Text>⭐ Rating: 4.5 / 5</Text>
+                <ProgressBar progress={4.5 / 5} color={theme.colors.primary} />
+                <Button mode="contained-tonal" onPress={() => {}}>
+                  Leave a Review
+                </Button>
+              </View>
+            </Card.Content>
+          </Card>
+
+          {nearbyLeisure.length > 0 && (
+            <Card style={stationStyles.card}>
+              <Card.Content>
+                <Text style={styles.sectionTitle}>
+                  🎯 Nearby Leisure Activities
+                </Text>
+                {nearbyLeisure.map((leisure) => (
+                  <View key={leisure.leisure_id} style={styles.leisureItem}>
+                    <Chip icon="map-marker" style={styles.chip} mode="outlined">
+                      {leisure.category}
+                    </Chip>
+                    <Text style={styles.leisureName}>{leisure.name}</Text>
+                  </View>
+                ))}
+              </Card.Content>
+            </Card>
+          )}
+
+          <Button
+            mode="contained"
+            onPress={handleGetDirections}
+            style={styles.button}
+            icon="directions"
+            contentStyle={styles.buttonContent}
+          >
+            Get Directions to {displayTitle}
+          </Button>
+        </View>
       </ScrollView>
     </PaperProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: "#f5f5f5",
+  },
+  card: {
+    marginBottom: 16,
+    elevation: 4,
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginTop: 16,
+    marginBottom: 12,
+    color: "#333",
+  },
+  infoRow: {
+    flexDirection: "row",
+    marginBottom: 8,
+  },
+  infoLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#666",
+    width: 100,
+  },
+  info: {
+    fontSize: 14,
+    color: "#333",
+    flex: 1,
+  },
+  divider: {
+    marginVertical: 16,
+  },
+  leisureItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+    padding: 8,
+    backgroundColor: "#f9f9f9",
+    borderRadius: 8,
+  },
+  chip: {
+    marginRight: 12,
+  },
+  leisureName: {
+    fontSize: 14,
+    flex: 1,
+    fontWeight: "500",
+  },
+  button: {
+    marginTop: 8,
+    marginBottom: 24,
+    marginHorizontal: 16,
+  },
+  buttonContent: {
+    paddingVertical: 8,
+  },
+  error: {
+    fontSize: 16,
+    color: "red",
+    textAlign: "center",
+    marginTop: 20,
+  },
+});
