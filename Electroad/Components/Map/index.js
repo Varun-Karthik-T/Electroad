@@ -11,11 +11,9 @@ import { FAB } from "react-native-paper";
 import * as Location from "expo-location";
 import { router } from "expo-router";
 import LocationButton from "./LocationButton";
-import { getAllEvs, getAllLeisureSpots } from "../api/api";
-import LottieView from "lottie-react-native";
-import loader from "@/assets/map1.json";
 import { WebView } from "react-native-webview";
-//import data, { sampleData } from "./data";
+import { sampleData } from "./data";
+import LottieView from "lottie-react-native";
 
 export default function MapWithCurrentLocation() {
   const [point, setPoint] = useState({
@@ -27,8 +25,8 @@ export default function MapWithCurrentLocation() {
   const [errorMsg, setErrorMsg] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [location, setLocation] = useState(null);
-  const [evStations, setEvStations] = useState([]);
-  const [leisure, setLeisureSpots] = useState([]); 
+  const [evStations, setEvStations] = useState(sampleData.ev);
+  const [leisure, setLeisureSpots] = useState(sampleData.leisure);
 
   const CurrentLocationFinder = async () => {
     try {
@@ -83,31 +81,10 @@ export default function MapWithCurrentLocation() {
   };
 
   useEffect(() => {
-    const fetchEVs = async () => {
-      try {
-        const response = await getAllEvs();
-        setEvStations(response?.data || []);
-      } catch (error) {
-        console.error("Error fetching EVs:", error);
-        // fallback to sample data
-        //setEvStations(sampleData.ev || []);
-      }
-    };
-
-    const fetchLeisureSpots = async () => {
-      try {
-        const response = await getAllLeisureSpots();
-        setLeisureSpots(response?.data || []);
-      } catch (error) {
-        console.error("Error fetching EVs:", error);
-        // fallback to sample data
-        //setEvStations(sampleData.ev || []);
-      }
-    };
-
+    // Use static data instead of API calls
+    setEvStations(sampleData.ev);
+    setLeisureSpots(sampleData.leisure);
     userLocation();
-    fetchEVs();
-    fetchLeisureSpots();
   }, []);
 
   // Build HTML for WebView, inject sample data and current position
@@ -187,13 +164,13 @@ export default function MapWithCurrentLocation() {
       // Add EV markers (green)
       (injected.ev || []).forEach(s => {
         try {
-          const m = L.marker([s.latitude, s.longitude], {icon: greenIcon, title: s.title || s.name}).addTo(map);
-          m.bindPopup('🔋 EV Station: ' + (s.title||s.name));
+          const m = L.marker([s.latitude, s.longitude], {icon: greenIcon, title: s.name}).addTo(map);
+          m.bindPopup('🔋 EV Station: ' + s.name);
           m.on('click', function(){
             if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
               window.ReactNativeWebView.postMessage(JSON.stringify({ 
                 type: 'station_click', 
-                id: s._id || s.id || s.name,
+                id: s._id || s.id,
                 latitude: s.latitude,
                 longitude: s.longitude,
                 title: s.name,

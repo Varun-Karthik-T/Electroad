@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Modal,
   TextInput,
+  Alert,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import {
@@ -19,12 +20,35 @@ import {
   Button,
 } from "react-native-paper";
 import { schedulePushNotification } from "../../Components/notify";
-import { getStationById, fetchUserEV } from "@/Components/api/api";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { sampleData } from "@/Components/Map/data";
+import { useLocalSearchParams } from "expo-router";
+import AppBar from "@/Components/AppBar";
 
-export default function SlotBookingPage({ navigation }) {
+export default function SlotBookingPage() {
+  const params = useLocalSearchParams();
+  const { id } = params;
+
   const [ports, setPorts] = useState([]);
-  const [cars, setCars] = useState([]);
+  const [cars, setCars] = useState([
+    {
+      id: 1,
+      name: "Tesla Model 3",
+      batteryType: "Lithium-Ion",
+      batteryCapacity: 75,
+    },
+    {
+      id: 2,
+      name: "Tata Nexon EV",
+      batteryType: "Lithium-Ion",
+      batteryCapacity: 30.2,
+    },
+    {
+      id: 3,
+      name: "MG ZS EV",
+      batteryType: "Lithium-Ion",
+      batteryCapacity: 44.5,
+    },
+  ]);
   const [showAvailablePorts, setShowAvailablePorts] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [remainingPercent, setRemainingPercent] = useState("");
@@ -34,13 +58,22 @@ export default function SlotBookingPage({ navigation }) {
   const [startChargePercent, setStartChargePercent] = useState("");
 
   useEffect(() => {
-    AsyncStorage.getItem("stationID").then(async (stationId) => {
-      const resp = await getStationById(stationId);
-      setPorts(resp.data.ports);
-      const c = await fetchUserEV();
-      setCars(c.data.Vehicles);
-    });
-  }, []);
+    const station = sampleData.ev.find(
+      (s) => s._id === id || s.id === id || s.name === id
+    );
+
+    if (station) {
+      const stationPorts =
+        station.connectors?.map((connector, idx) => ({
+          id: idx + 1,
+          portId: `PORT-${idx + 1}`,
+          type: connector,
+          enabled: station.status === "available",
+          power: station.power,
+        })) || [];
+      setPorts(stationPorts);
+    }
+  }, [id]);
 
   const handlePortSelection = (port) => {
     if (port.enabled === true) {
@@ -57,42 +90,70 @@ export default function SlotBookingPage({ navigation }) {
     setShowAvailablePorts(!showAvailablePorts);
   };
 
-  const handleModalSubmit = () => {
-    setModalVisible(false);
-    schedulePushNotification(
-      "Booking successful!",
-      "You have successfully booked the port."
-    );
-    setRemainingPercent("");
-    setSelectedVehicle(null);
-    setStartChargePercent("");
-    setSlotTimings("");
-    alert("Booking successful!");
-  };
-
-  const getSlotTimings = (vehicle, chargerType, startCharge) => {
-    const batteryType = vehicle?.batteryType || "unknown";
-    const chargeRequired = 100 - startCharge;
-
-    let duration = "No duration available";
-
-    if (batteryType === "Lithium-Ion" && chargerType === "Fast") {
-      duration = `${Math.ceil((chargeRequired / 100) * 1)} hour (Fast Charging)`;
-    } else if (batteryType === "Lithium-Ion" && chargerType === "Slow") {
-      duration = `${Math.ceil((chargeRequired / 100) * 2)} hours (Slow Charging)`;
-    } else if (chargerType === "Fast") {
-      duration = `${Math.ceil((chargeRequired / 100) * 1.5)} hours (Fast Charging)`;
-    } else if (chargerType === "Slow") {
-      duration = `${Math.ceil((chargeRequired / 100) * 3)} hours (Slow Charging)`;
+  const handleModalSubmit = async () => {
+    if (!selectedVehicle || !startChargePercent || !selectedPort) {
+      alert("Please fill in all details");
+      return;
     }
 
-    return duration;
+    try {
+      // Schedule notification
+      await schedulePushNotification(
+        "Booking Confirmed! 🔋",
+        `Your charging slot at Port ${selectedPort.portId} has been booked. Estimated time: ${slotTimings}`
+      );
+
+      // Close modal and reset
+      setModalVisible(false);
+      setSelectedVehicle(null);
+      setStartChargePercent("");
+      setSlotTimings("");
+      setSelectedPort(null);
+
+      // Show success message
+      Alert.alert(
+        "Booking Successful! ✅",
+        `Port: ${selectedPort.portId}\nVehicle: ${selectedVehicle.name}\nCharging Time: ${slotTimings}`,
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              // Optionally navigate back or to another screen
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      console.error("Error scheduling notification:", error);
+      alert("Booking successful but notification failed");
+    }
+  };
+
+  const getSlotTimings = (vehicle, port, startCharge) => {
+    const batteryType = vehicle?.batteryType || "Lithium-Ion";
+    const chargeRequired = 100 - startCharge;
+    const powerKw = port?.power || 50;
+
+    // Rough estimate: charging time = (battery capacity * charge required) / (power * efficiency)
+    const batteryCapacity = vehicle?.batteryCapacity || 50;
+    const chargingEfficiency = 0.9;
+
+    const timeHours =
+      (batteryCapacity * chargeRequired) / 100 / (powerKw * chargingEfficiency);
+    const hours = Math.floor(timeHours);
+    const minutes = Math.round((timeHours - hours) * 60);
+
+    return `${hours}h ${minutes}m (${powerKw} kW charging)`;
   };
 
   const handleVehicleSelection = (vehicle) => {
     setSelectedVehicle(vehicle);
     if (selectedPort && startChargePercent !== "") {
-      const timings = getSlotTimings(vehicle, selectedPort.type, parseInt(startChargePercent));
+      const timings = getSlotTimings(
+        vehicle,
+        selectedPort,
+        parseInt(startChargePercent)
+      );
       setSlotTimings(timings);
     }
   };
@@ -102,7 +163,7 @@ export default function SlotBookingPage({ navigation }) {
     if (selectedVehicle && selectedPort) {
       const timings = getSlotTimings(
         selectedVehicle,
-        selectedPort.type,
+        selectedPort,
         parseInt(charge)
       );
       setSlotTimings(timings);
@@ -179,6 +240,7 @@ export default function SlotBookingPage({ navigation }) {
 
   return (
     <PaperProvider theme={theme}>
+      <AppBar title="Book Charging Slot" />
       <View style={styles.container}>
         <Text style={styles.title}>Ports in the Station</Text>
         <View style={styles.filterContainer}>
@@ -194,10 +256,17 @@ export default function SlotBookingPage({ navigation }) {
           {ports
             .filter((port) => (showAvailablePorts ? port.enabled : true))
             .map((port) => (
-              <Pressable key={port.id} onPress={() => handlePortSelection(port)}>
+              <Pressable
+                key={port.id}
+                onPress={() => handlePortSelection(port)}
+              >
                 <Card style={styles.cardContainer}>
                   <Title>Port ID: {port.portId}</Title>
                   <Paragraph>Charger Type: {port.type}</Paragraph>
+                  <Paragraph>Power: {port.power} kW</Paragraph>
+                  <Paragraph>
+                    Status: {port.enabled ? "✅ Available" : "❌ Unavailable"}
+                  </Paragraph>
                 </Card>
               </Pressable>
             ))}
@@ -212,25 +281,59 @@ export default function SlotBookingPage({ navigation }) {
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
               <Text style={styles.title}>Booking Information</Text>
+              <Text style={{ marginBottom: 5 }}>
+                Port: {selectedPort?.portId}
+              </Text>
+              <Text
+                style={{
+                  marginBottom: 10,
+                }}
+              >
+                Type: {selectedPort?.type} ({selectedPort?.power} kW)
+              </Text>
+
               <Picker
                 selectedValue={selectedVehicle}
                 style={styles.picker}
                 onValueChange={handleVehicleSelection}
               >
+                <Picker.Item label="Select Vehicle" value={null} />
                 {cars.map((car) => (
                   <Picker.Item key={car.id} label={car.name} value={car} />
                 ))}
               </Picker>
+
               <TextInput
                 style={styles.input}
                 placeholder="Enter Current Charge (%)"
                 value={startChargePercent}
                 onChangeText={handleChargePercentageChange}
                 keyboardType="numeric"
+                maxLength={3}
               />
-              <Text>Charging Duration: {slotTimings}</Text>
-              <Button mode="contained" onPress={handleModalSubmit}>
+
+              {slotTimings && (
+                <Text
+                  style={{
+                    marginBottom: 15,
+                    fontWeight: "bold",
+                    color: theme.colors.primary,
+                  }}
+                >
+                  ⏱️ Charging Duration: {slotTimings}
+                </Text>
+              )}
+
+              <Button
+                mode="contained"
+                onPress={handleModalSubmit}
+                disabled={!selectedVehicle || !startChargePercent}
+                style={{ marginBottom: 10 }}
+              >
                 Confirm Booking
+              </Button>
+              <Button mode="text" onPress={() => setModalVisible(false)}>
+                Cancel
               </Button>
             </View>
           </View>

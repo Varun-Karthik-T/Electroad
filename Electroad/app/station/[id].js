@@ -14,8 +14,7 @@ import { View, ScrollView, StyleSheet } from "react-native";
 import { useEffect, useState } from "react";
 import AppBar from "@/Components/AppBar";
 import { ActivityIndicator } from "react-native-paper";
-//import { sampleData } from "@/Components/Map/data";
-import { getAllEvs } from "../../Components/api/api";
+import { sampleData } from "@/Components/Map/data";
 
 export default function StationPage() {
   const theme = {
@@ -36,28 +35,26 @@ export default function StationPage() {
   const [station, setStation] = useState(null);
   const [nearbyLeisure, setNearbyLeisure] = useState([]);
 
+  useEffect(() => {
+    const load = () => {
+      const allStations = sampleData.ev;
+      const s = allStations.find(
+        (x) => x._id === id || x.id === id || x.name === id
+      );
+      setStation(s);
 
-  // Find station from sample data
- // const station = sampleData.ev.find((s) => s.id === parseInt(id));
- 
-
-    useEffect(() => {
-      const load = async () => {
-        const resp = await getAllEvs();
-        const allStations = resp?.data || [];
-
-        const s = allStations.find(x => 
-          x._id === id || x.id === id || x.name === id
+      // Find nearby leisure (within ~0.05 degrees)
+      if (s) {
+        const nearby = sampleData.leisure.filter(
+          (l) =>
+            Math.abs(l.latitude - s.latitude) < 0.05 &&
+            Math.abs(l.longitude - s.longitude) < 0.05
         );
-
-        setStation(s);
-      };
-      load();
-    }, []);
-
-
-  // Find leisure activities near this station
- // const nearbyLeisure = sampleData.leisure.filter((l) => l.id === parseInt(id));
+        setNearbyLeisure(nearby);
+      }
+    };
+    load();
+  }, [id]);
 
   const stationStyles = StyleSheet.create({
     container: {
@@ -141,16 +138,18 @@ export default function StationPage() {
     );
   }
 
-  const displayTitle = stationTitle || station.title;
-  const displayLat = stationLat || station.latitude;
-  const displayLng = stationLng || station.longitude;
+  const displayTitle = stationTitle || station?.name;
+  const displayLat = stationLat || station?.latitude;
+  const displayLng = stationLng || station?.longitude;
 
-  // Sample port data for demo
-  // const samplePorts = [
-  //   { type: "Type 2 (AC)", enabled: true, portId: "P001" },
-  //   { type: "CCS (DC)", enabled: true, portId: "P002" },
-  //   { type: "CHAdeMO (DC)", enabled: false, portId: "P003" },
-  // ];
+  // Generate ports from connectors
+  const ports =
+    station?.connectors?.map((connector, idx) => ({
+      portId: `PORT-${idx + 1}`,
+      type: connector,
+      power: station.power,
+      enabled: station.status === "available",
+    })) || [];
 
   return (
     <PaperProvider theme={theme}>
@@ -160,7 +159,9 @@ export default function StationPage() {
           <Card style={stationStyles.card}>
             <Card.Title
               title={`🔋 ${displayTitle}`}
-              subtitle={`Lat: ${displayLat}, Lon: ${displayLng}`}
+              subtitle={`${
+                station?.address || `Lat: ${displayLat}, Lon: ${displayLng}`
+              }`}
             />
             <Card.Cover
               style={stationStyles.coverImage}
@@ -184,13 +185,16 @@ export default function StationPage() {
           <Card style={stationStyles.card}>
             <Card.Content>
               <Text style={styles.sectionTitle}>⚡ Charging Ports</Text>
-              <Text>No. of Charging Ports: {station.connectors.length}</Text>
+              <Text>No. of Charging Ports: {ports.length}</Text>
 
-              {station.connectors.map((port, index) => (
+              {ports.map((port, index) => (
                 <View key={index} style={stationStyles.port}>
-                  <Text>Type: {port}</Text>
-                  <Text>Status: {station.status === "available" ? "✅ Available" : "❌ Unavailable"}</Text>
-                  <Text>Power Output: {station.power} kW</Text>
+                  <Text>Port ID: {port.portId}</Text>
+                  <Text>Type: {port.type}</Text>
+                  <Text>
+                    Status: {port.enabled ? "✅ Available" : "❌ Unavailable"}
+                  </Text>
+                  <Text>Power Output: {port.power} kW</Text>
                 </View>
               ))}
               <View style={stationStyles.review}>
